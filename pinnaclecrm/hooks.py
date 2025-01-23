@@ -5,6 +5,9 @@ app_description = "An app to manage pinnacle crm"
 app_email = "satish@mytaxcafe.com"
 app_license = "mit"
 
+
+before_migrate = "pinnaclecrm.api.after_migrate"
+
 # Apps
 # ------------------
 
@@ -44,11 +47,12 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-    "Lead" : "public/js/lead_custom_naming_series.js",
-    "Quotation" : "public/js/quotation_custom_naming_series.js",
-    "Sales Order" : "public/js/sales_order_naming_series.js",
-    "Delivery Note" : "public/js/delivery_note_naming_series.js",
-    "Sales Invoice" : "public/js/sales_invoice_naming_series.js",
+    "Lead" : "public/js/lead_customization.js",
+    "Quotation" : "public/js/quotation_customization.js",
+    "Sales Order" : "public/js/sales_order_customization.js",
+    "Delivery Note" : "public/js/delivery_note_customization.js",
+    "Sales Invoice" : "public/js/sales_invoice_customization.js",
+    # "Quotation" : "public/js/customer_kyc.js",
     }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

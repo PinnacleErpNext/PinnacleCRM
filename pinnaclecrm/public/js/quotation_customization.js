@@ -51,19 +51,19 @@ frappe.ui.form.on("Quotation", {
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
 
-              if (frm.doc.party_name.includes("-A-") && item.includes("-A-")) {
+              if (frm.doc.party_name.includes("-A") && item.includes("-A-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-G-") &&
+                frm.doc.party_name.includes("-G") &&
                 item.includes("-G-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-D-") &&
+                frm.doc.party_name.includes("-D") &&
                 item.includes("-D-")
               ) {
                 console.log(item);

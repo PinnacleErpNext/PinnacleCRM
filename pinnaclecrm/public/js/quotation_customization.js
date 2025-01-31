@@ -285,155 +285,271 @@ erpnext.selling.QuotationController = class QuotationController extends (
     if (has_alternative_item) {
       this.show_alternative_items_dialog();
     } else {
-      let address = new frappe.ui.Dialog({
-        title: "Address Details",
-        fields: [
-          {
-            label: "Address Type",
-            fieldname: "address_type",
-            fieldtype: "Select",
-            options: [
-              "Billing",
-              "Shipping",
-              "Office",
-              "Personal",
-              "Plant",
-              "Postal",
-              "Shop",
-              "Subsidiary",
-              "Warehouse",
-              "Current",
-              "Permanent",
-              "Other",
-            ].join("\n"),
-            default: "Billing",
-          },
-          {
-            label: "GST Category",
-            fieldname: "gst_category",
-            fieldtype: "Select",
-            options: [
-              "Registered Regular",
-              "Registered Composition",
-              "Unregistered",
-              "SEZ",
-              "Overseas",
-              "Deemed Export",
-              "UIN",
-              "Tax Deducter",
-              "Tax Collecter",
-              "Input Service Distributer",
-            ].join("\n"),
-            default: "Unregistered",
-          },
-          {
-            label: "GST IN",
-            fieldname: "gst_in",
-            fieldtype: "Data",
-            mandatory_depends_on: "eval:doc.gst_category != 'Unregistered'",
-          },
-          {
-            label: "Postal Code",
-            fieldname: "postal_code",
-            fieldtype: "Data",
-            reqd: true,
-          },
-          {
-            label: "City/Town",
-            fieldname: "city",
-            fieldtype: "Data",
-            reqd: true,
-          },
-          {
-            label: "Address Line 1",
-            fieldname: "address_line_1",
-            fieldtype: "Data",
-            reqd: true,
-          },
-          {
-            label: "State/Province",
-            fieldname: "state",
-            fieldtype: "Select",
-            options: [
-              "Andhra Pradesh",
-              "Arunachal Pradesh",
-              "Assam",
-              "Bihar",
-              "Chhattisgarh",
-              "Goa",
-              "Gujarat",
-              "Haryana",
-              "Himachal Pradesh",
-              "Jharkhand",
-              "Karnataka",
-              "Kerala",
-              "Madhya Pradesh",
-              "Maharashtra",
-              "Manipur",
-              "Meghalaya",
-              "Mizoram",
-              "Nagaland",
-              "Odisha",
-              "Punjab",
-              "Rajasthan",
-              "Sikkim",
-              "Tamil Nadu",
-              "Telangana",
-              "Tripura",
-              "Uttar Pradesh",
-              "Uttarakhand",
-              "West Bengal",
-              "Andaman & Nicobar Islands",
-              "Chandigarh",
-              "Dadra & Nagar Haveli and Daman & Diu",
-              "Lakshadweep",
-              "Ladakh",
-              "Puducherry",
-              "Jammu and Kashmir",
-            ].join("\n"),
-            reqd: true,
-          },
-          {
-            label: "Country",
-            fieldname: "country",
-            fieldtype: "Link",
-            options: "Country",
-            reqd: true,
-          },
-        ],
-        size: "small", // small, large, extra-large
-        primary_action_label: "Submit",
-        primary_action(values) {
-          console.log(values);
+      frappe.call({
+        method: "pinnaclecrm.api.get_address",
+        args: {
+          docname: this.frm.docname,
+        },
+        callback: function (res) {
+          let address_data =
+            res.message && res.message.length > 0 ? res.message[0] : null;
 
-          if (!values) {
-            frappe.msgprint(__("Please fill all required fields."));
-            return;
-          }
+          setTimeout(() => {
+            // Ensures all fields are properly loaded before rendering
+            let address_dialog = new frappe.ui.Dialog({
+              title: "Address Details",
+              fields: [
+                {
+                  fieldname: "address_details",
+                  fieldtype: "Section Break",
+                  options: "fa fa-map-marker",
+                },
+                {
+                  fieldname: "gst_category",
+                  label: "GST Category",
+                  fieldtype: "Select",
+                  options: [
+                    "Registered Regular",
+                    "Registered Composition",
+                    "Unregistered",
+                    "SEZ",
+                    "Overseas",
+                    "Deemed Export",
+                    "UIN",
+                    "Tax Deducter",
+                    "Tax Collecter",
+                    "Input Service Distributer",
+                  ].join("\n"),
+                  default: address_data
+                    ? address_data.gst_category
+                    : "Unregistered",
+                },
+                {
+                  fieldname: "gstin",
+                  label: "GSTIN",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.gstin : "",
+                  mandatory_depends_on:
+                    "eval:doc.gst_category != 'Unregistered'",
+                },
+                {
+                  fieldname: "address_title",
+                  label: "Address Title",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.address_title : "",
+                },
+                {
+                  fieldname: "address_type",
+                  label: "Address Type",
+                  fieldtype: "Select",
+                  options: [
+                    "Billing",
+                    "Shipping",
+                    "Office",
+                    "Personal",
+                    "Plant",
+                    "Postal",
+                    "Shop",
+                    "Subsidiary",
+                    "Warehouse",
+                    "Current",
+                    "Permanent",
+                    "Other",
+                  ].join("\n"),
+                  reqd: 1,
+                  default: address_data ? address_data.address_type : "Billing",
+                },
+                {
+                  fieldname: "address_line1",
+                  label: "Address Line 1",
+                  fieldtype: "Data",
+                  reqd: 1,
+                  default: address_data ? address_data.address_line1 : "",
+                },
+                {
+                  fieldname: "address_line2",
+                  label: "Address Line 2",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.address_line2 : "",
+                },
+                {
+                  fieldname: "city",
+                  label: "City/Town",
+                  fieldtype: "Data",
+                  reqd: 1,
+                  default: address_data ? address_data.city : "",
+                },
+                {
+                  fieldname: "county",
+                  label: "County",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.county : "",
+                },
+                {
+                  fieldname: "state",
+                  label: "State/Province",
+                  fieldtype: "Select",
+                  options: [
+                    "Andhra Pradesh",
+                    "Arunachal Pradesh",
+                    "Assam",
+                    "Bihar",
+                    "Chhattisgarh",
+                    "Goa",
+                    "Gujarat",
+                    "Haryana",
+                    "Himachal Pradesh",
+                    "Jharkhand",
+                    "Karnataka",
+                    "Kerala",
+                    "Madhya Pradesh",
+                    "Maharashtra",
+                    "Manipur",
+                    "Meghalaya",
+                    "Mizoram",
+                    "Nagaland",
+                    "Odisha",
+                    "Punjab",
+                    "Rajasthan",
+                    "Sikkim",
+                    "Tamil Nadu",
+                    "Telangana",
+                    "Tripura",
+                    "Uttar Pradesh",
+                    "Uttarakhand",
+                    "West Bengal",
+                    "Andaman & Nicobar Islands",
+                    "Chandigarh",
+                    "Dadra & Nagar Haveli and Daman & Diu",
+                    "Lakshadweep",
+                    "Ladakh",
+                    "Puducherry",
+                    "Jammu and Kashmir",
+                  ].join("\n"),
+                  reqd: 1,
+                  default: address_data ? address_data.state : "",
+                },
+                {
+                  fieldname: "country",
+                  label: "Country",
+                  fieldtype: "Link",
+                  options: "Country",
+                  reqd: 1,
+                  default: address_data ? address_data.country : "",
+                },
+                {
+                  fieldname: "pincode",
+                  label: "Postal Code",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.pincode : "",
+                },
 
-          frappe.call({
-            method: "pinnaclecrm.api.create_customer",
-            args: {
-              address: values,
-              src: cur_frm.doc.name,
-            },
-            callback: (res) => {
-              console.log(res)
-              console.log(res.message.status)
-              if (res.message.status == 200) {
-                address.hide()
-                frappe.model.open_mapped_doc({
-                  method:
-                    "erpnext.selling.doctype.quotation.quotation.make_sales_order",
-                  frm: me.frm,
-                });
-              }
-            },
-          });
+                {
+                  fieldname: "column_break0",
+                  fieldtype: "Column Break",
+                  width: "50%",
+                },
+
+                {
+                  fieldname: "email_id",
+                  label: "Email Address",
+                  fieldtype: "Data",
+                  options: "Email",
+                  default: address_data ? address_data.email_id : "",
+                },
+                {
+                  fieldname: "phone",
+                  label: "Phone",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.phone : "",
+                },
+                {
+                  fieldname: "fax",
+                  label: "Fax",
+                  fieldtype: "Data",
+                  default: address_data ? address_data.fax : "",
+                },
+                {
+                  fieldname: "is_primary_address",
+                  label: "Preferred Billing Address",
+                  fieldtype: "Check",
+                  default: address_data ? address_data.is_primary_address : 0,
+                },
+                {
+                  fieldname: "is_shipping_address",
+                  label: "Preferred Shipping Address",
+                  fieldtype: "Check",
+                  default: address_data ? address_data.is_shipping_address : 0,
+                },
+                {
+                  fieldname: "disabled",
+                  label: "Disabled",
+                  fieldtype: "Check",
+                  default: address_data ? address_data.disabled : 0,
+                },
+              ],
+              size: "small",
+              primary_action_label: address_data
+                ? "Proceed"
+                : "Create Sales Order",
+              primary_action(values) {
+                if (!values) {
+                  frappe.msgprint(__("Please fill all required fields."));
+                  return;
+                }
+
+                let is_changed =
+                  !address_data ||
+                  Object.keys(values).some(
+                    (key) => values[key] !== address_data[key]
+                  );
+
+                if (is_changed) {
+                  if (address_dialog.primary_action_label === "Proceed") {
+                    frappe.throw("Trigger!");
+                    address_dialog.hide();
+                    frappe.model.open_mapped_doc({
+                      method:
+                        "erpnext.selling.doctype.quotation.quotation.make_sales_order",
+                      frm: cur_frm,
+                    });
+                  } else {
+                    frappe.call({
+                      method: "pinnaclecrm.api.create_customer",
+                      args: {
+                        address: values,
+                        src: cur_frm.doc.name,
+                      },
+                      callback: (res) => {
+                        if (res.message.status == 200) {
+                          address.hide();
+                          frappe.model.open_mapped_doc({
+                            method:
+                              "erpnext.selling.doctype.quotation.quotation.make_sales_order",
+                            frm: me.frm,
+                          });
+                        }
+                      },
+                    });
+                  }
+                } else {
+                  address_dialog.hide();
+                  frappe.model.open_mapped_doc({
+                    method:
+                      "erpnext.selling.doctype.quotation.quotation.make_sales_order",
+                    frm: cur_frm,
+                  });
+                }
+              },
+            });
+
+            address_dialog.show();
+          }, 100); // Delay to ensure form fields load properly
+        },
+        error: function (err) {
+          console.error("Error while fetching address:", err);
         },
       });
-
-      address.show();
     }
   }
 

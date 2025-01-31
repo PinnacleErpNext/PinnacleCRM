@@ -13,6 +13,7 @@ frappe.ui.form.on("Lead", {
     ]);
     frm.set_df_property("qualification_status", "options", [
       "Unqualified",
+      "Yet to be called",
       "Qualified",
     ]);
   },

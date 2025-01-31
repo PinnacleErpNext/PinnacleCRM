@@ -2,7 +2,7 @@ import frappe
 import json
 from erpnext.selling.doctype.quotation.quotation import _make_customer
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def create_customer(address, src):
     address = json.loads(address)
     print(address)
@@ -17,7 +17,8 @@ def create_customer(address, src):
             "docstatus": 0,
             "address_title": customer.name,
             "address_type": address.get('address_type'),
-            "address_line1": address.get('address_line_1'),
+            "address_line1": address.get('address_line1'),
+            "address_line2": address.get('address_line2'),
             "city": address.get('city'),
             "state": address.get('state'),
             "country": address.get('country'),
@@ -67,3 +68,57 @@ def after_migrate():
 
     # Commit the changes to the database
     frappe.db.commit()
+
+#API get address
+@frappe.whitelist(allow_guest=True)
+def get_address(docname):
+    # Fetch Quotation document
+    try:
+        quotation = frappe.get_doc("Quotation", docname)
+    except frappe.DoesNotExistError:
+        frappe.throw(_("Quotation {0} not found").format(docname))
+
+    # SQL Query to fetch address
+    query = """
+        SELECT 
+            a.name,
+            a.address_title,
+            a.address_type,
+            a.address_line1,
+            a.address_line2,
+            a.city,
+            a.state,
+            a.country,
+            a.pincode,
+            a.is_primary_address,
+            a.is_shipping_address,
+            a.gstin,
+            dl.link_name,
+            dl.link_doctype
+        FROM 
+            `tabAddress` AS a
+        INNER JOIN 
+            `tabDynamic Link` dl
+        ON 
+            dl.parent = a.name
+        WHERE 
+            a.docstatus = 0
+        AND 
+            dl.link_doctype = %s
+        AND 
+            dl.link_name = %s
+    """
+
+    # First attempt: Fetch based on Quotation name
+    filter_values = ["Quotation", quotation.name]
+    address = frappe.db.sql(query, filter_values, as_dict=True)
+
+    # If no address found, try fetching based on the linked party (Customer/Supplier)
+    if not address:
+        filter_values = [quotation.quotation_to, quotation.party_name]
+        address = frappe.db.sql(query, filter_values, as_dict=True)
+
+    print(address)
+    
+    # Return results as JSON
+    return address

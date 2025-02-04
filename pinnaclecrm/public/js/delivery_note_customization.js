@@ -22,7 +22,7 @@ frappe.ui.form.on("Delivery Note", {
             // Use a standard for loop to allow break statement
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
-              console.log(item)
+              console.log(item);
               if (
                 frm.doc.items[0].against_sales_order.includes("-A-") &&
                 item.includes("-A-")
@@ -68,5 +68,12 @@ frappe.ui.form.on("Delivery Note", {
     } else {
       console.log("Party name not available or naming series already set");
     }
+  },
+  onload: function (frm) {
+    setTimeout(function () {
+      frm.page.remove_inner_button("Shipment", "Create");
+      frm.page.remove_inner_button("Delivery Trip", "Create");
+      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    }, 100);
   },
 });

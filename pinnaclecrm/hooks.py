@@ -6,7 +6,8 @@ app_email = "satish@mytaxcafe.com"
 app_license = "mit"
 
 
-before_migrate = "pinnaclecrm.api.after_migrate"
+before_migrate = "pinnaclecrm.events.after_migration.after_migrate"
+
 
 # Apps
 # ------------------
@@ -147,13 +148,20 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	# "*": {
+	# 	"on_update": "method",
+	# 	"on_cancel": "method",
+	# 	"on_trash": "method"
+	# }
+ 
+ "Customer": {
+        "on_trash": "pinnaclecrm.events.dummy_customer.prevent_dummy_customer_deletion"
+    },
+ "Sales Order": {
+     "before_save": "pinnaclecrm.events.so_before_save.custom_before_save"
+ }
+}
 
 # Scheduled Tasks
 # ---------------

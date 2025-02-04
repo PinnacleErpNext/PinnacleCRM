@@ -22,6 +22,9 @@ frappe.ui.form.on("Lead", {
       frm.page.remove_inner_button("Opportunity", "Create");
       frm.page.remove_inner_button("Customer", "Create");
       frm.page.remove_inner_button("Prospect", "Create");
-    }, 500); // Delay by 500ms
+
+      // Hide the "Action" button
+      frm.page.wrapper.find('[data-label="Action"]').hide();
+    }, 10);
   },
 });

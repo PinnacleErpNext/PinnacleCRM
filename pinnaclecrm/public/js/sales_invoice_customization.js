@@ -4,7 +4,6 @@ frappe.ui.form.on("Sales Invoice", {
 
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.items[0].delivery_note) {
-      ;
       frappe.db
         .get_value(
           "Property Setter",
@@ -13,7 +12,6 @@ frappe.ui.form.on("Sales Invoice", {
         )
         .then((res) => {
           if (res.message && res.message.value) {
-            ;
             // Split the options by newline and trim each option
             let naming_series_array = res.message.value
               .split("\n")
@@ -31,7 +29,6 @@ frappe.ui.form.on("Sales Invoice", {
                 frm.doc.items[0].delivery_note.includes("-A-") &&
                 item.includes("-A-")
               ) {
-                ;
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
@@ -40,7 +37,6 @@ frappe.ui.form.on("Sales Invoice", {
                 frm.doc.items[0].delivery_note.includes("-G-") &&
                 item.includes("-G-")
               ) {
-                ;
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
@@ -49,7 +45,6 @@ frappe.ui.form.on("Sales Invoice", {
                 frm.doc.items[0].delivery_note.includes("-D-") &&
                 item.includes("-D-")
               ) {
-                ;
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
@@ -76,5 +71,13 @@ frappe.ui.form.on("Sales Invoice", {
     } else {
       console.log("Party name not available or naming series already set");
     }
+  },
+  onload: function (frm) {
+    setTimeout(function () {
+      frm.page.remove_inner_button("Dunning", "Create");
+      frm.page.remove_inner_button("Maintenance Schedule", "Create");
+      frm.page.remove_inner_button("Payment Request", "Create");
+      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    }, 100);
   },
 });

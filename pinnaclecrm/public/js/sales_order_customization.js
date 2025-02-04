@@ -12,7 +12,7 @@ frappe.listview_settings["Sales Order"] = {
 
 frappe.ui.form.on("Sales Order", {
   refresh: function (frm) {
-    console.log("Triggered!")
+    console.log("Triggered!");
     // Check if the document is new and the first item's prevdoc_docname exists
     if (
       frm.is_new() &&
@@ -67,5 +67,16 @@ frappe.ui.form.on("Sales Order", {
     } else {
       console.log("Document is not new or prevdoc_docname is not available.");
     }
+  },
+  onload: function (frm) {
+    setTimeout(function () {
+      frm.page.remove_inner_button("Pick List", "Create");
+      frm.page.remove_inner_button("Work Order", "Create");
+      frm.page.remove_inner_button("Material Request", "Create");
+      frm.page.remove_inner_button("Request For Raw Materials", "Create");
+      frm.page.remove_inner_button("Purchase Order", "Create");
+      frm.page.remove_inner_button("Project", "Create");
+      frm.page.remove_inner_button("Payment Request", "Create");
+    }, 100);
   },
 });

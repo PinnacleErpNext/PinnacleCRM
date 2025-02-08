@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestItemNamingSeriesMapping(FrappeTestCase):
+class TestNamingSeriesMapping(FrappeTestCase):
 	pass

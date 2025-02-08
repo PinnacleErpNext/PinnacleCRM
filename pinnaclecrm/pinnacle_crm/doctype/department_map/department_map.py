@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ItemNamingSeriesMapping(Document):
+class DepartmentMap(Document):
 	pass

@@ -48,13 +48,29 @@ frappe.ui.form.on("Sales Invoice", {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
+              } else if (
+                frm.doc.items[0].sales_order.includes("-GR-") &&
+                frm.doc.items[0].delivery_note.includes("-GR-") &&
+                item.includes("-GR-")
+              ) {
+                console.log(item);
+                selected_series = item;
+                break; // Exit loop once a match is found
+              }else if (
+                frm.doc.items[0].sales_order.includes("-AR-") &&
+                frm.doc.items[0].delivery_note.includes("-AR-") &&
+                item.includes("-AR-")
+              ) {
+                console.log(item);
+                selected_series = item;
+                break; // Exit loop once a match is found
               }
             }
 
             // Set the selected series as the naming series, or use the default
             frm.set_value(
               "naming_series",
-              selected_series || naming_series_array[0]
+              selected_series || frm.doc.naming_series
             );
 
             // Make the naming series field read-only

@@ -36,9 +36,11 @@ frappe.ui.form.on("Sales Order", {
             // Find the appropriate naming series based on prevdoc_docname
             let prevdoc_name = frm.doc.items[0].prevdoc_docname;
             let selected_series = naming_series_array.find((item) => {
-              if (prevdoc_name.includes("A") && item.includes("A")) return true;
-              if (prevdoc_name.includes("G") && item.includes("G")) return true;
-              if (prevdoc_name.includes("D") && item.includes("D")) return true;
+              if (prevdoc_name.includes("-A-") && item.includes("-A-")) return true;
+              if (prevdoc_name.includes("-G-") && item.includes("-G-")) return true;
+              if (prevdoc_name.includes("-D-") && item.includes("-D-")) return true;
+              if (prevdoc_name.includes("-GR-") && item.includes("-GR-")) return true;
+              if (prevdoc_name.includes("-AR-") && item.includes("-AR-")) return true;
               return false;
             });
 

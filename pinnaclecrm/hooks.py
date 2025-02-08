@@ -30,7 +30,9 @@ before_migrate = "pinnaclecrm.events.after_migration.after_migrate"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/pinnaclecrm/css/pinnaclecrm.css"
-# app_include_js = "/assets/pinnaclecrm/js/pinnaclecrm.js"
+app_include_js = [
+    "/assets/pinnaclecrm/js/naming_series.js"
+    ]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/pinnaclecrm/css/pinnaclecrm.css"

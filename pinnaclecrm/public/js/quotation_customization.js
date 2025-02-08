@@ -1,30 +1,31 @@
 frappe.ui.form.on("Quotation", {
-  naming_series: function (frm) {
-    let seriesItemGroupMap = {};
-    frappe.db
-      .get_doc("Item Naming Series Mapping", frm.doc.doctype)
-      .then((doc) => {
-        doc.item_map.forEach((item) => {
-          seriesItemGroupMap[item.select_series] = item.item_group;
-        });
+  // naming_series: function (frm) {
+  //   let seriesItemGroupMap = {};
+  //   frappe.db
+  //     .get_doc("Naming Series Mapping", frm.doc.doctype)
+  //     .then((doc) => {
+  //       doc.item_group_map.forEach((item) => {
+  //         seriesItemGroupMap[item.select_series] = item.item_group;
+  //       });
+  //       console.log(seriesItemGroupMap)
+  //       let item_grp = seriesItemGroupMap[frm.doc.naming_series];
+  //       console.log("igrp:-",item_grp)
+  //       frm.fields_dict["items"].grid.get_field("item_code").get_query =
+  //         function (doc, cdt, cdn) {
+  //           let row = locals[cdt][cdn];
+  //           return {
+  //             filters: {
+  //               item_group: item_grp,
+  //             },
+  //           };
+  //         };
 
-        let item_grp = seriesItemGroupMap[frm.doc.naming_series];
-        frm.fields_dict["items"].grid.get_field("item_code").get_query =
-          function (doc, cdt, cdn) {
-            let row = locals[cdt][cdn];
-            return {
-              filters: {
-                item_group: item_grp,
-              },
-            };
-          };
-
-        frm.refresh_field("items");
-      })
-      .catch((err) => {
-        console.error("Error fetching Item Naming Series Mapping:", err);
-      });
-  },
+  //       frm.refresh_field("items");
+  //     })
+  //     .catch((err) => {
+  //       console.error("Error fetching Item Naming Series Mapping:", err);
+  //     });
+  // },
   refresh: function (frm) {
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.party_name) {
@@ -48,31 +49,45 @@ frappe.ui.form.on("Quotation", {
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
 
-              if (frm.doc.party_name.includes("-A") && item.includes("-A-")) {
+              if (frm.doc.party_name.includes("-A%") && item.includes("-A-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-G") &&
+                frm.doc.party_name.includes("-G%") &&
                 item.includes("-G-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-D") &&
+                frm.doc.party_name.includes("-D%") &&
                 item.includes("-D-")
+              ) {
+                console.log(item);
+                selected_series = item;
+                break; // Exit loop once a match is found
+              } else if (
+                frm.doc.party_name.includes("-GR") &&
+                item.includes("-GR-")
+              ) {
+                console.log(item);
+                selected_series = item;
+                break; // Exit loop once a match is found
+              } else if (
+                frm.doc.party_name.includes("-AR") &&
+                item.includes("-AR-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               }
             }
-
+            console.log(selected_series)
             // Set the selected series as the naming series, or use the default
             frm.set_value(
               "naming_series",
-              selected_series || naming_series_array[0]
+              selected_series || frm.doc.naming_series
             );
 
             // Make the naming series field read-only

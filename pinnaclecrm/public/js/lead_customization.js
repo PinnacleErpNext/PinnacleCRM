@@ -25,6 +25,6 @@ frappe.ui.form.on("Lead", {
 
       // Hide the "Action" button
       frm.page.wrapper.find('[data-label="Action"]').hide();
-    }, 10);
+    }, 100);
   },
 });

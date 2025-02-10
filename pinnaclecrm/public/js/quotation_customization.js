@@ -29,6 +29,12 @@ frappe.ui.form.on("Quotation", {
   refresh: function (frm) {
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.party_name) {
+      let naming_series;
+      frappe.db
+        .get_value("Lead", frm.doc.party_name, "naming_series")
+        .then((r) => {
+          naming_series = r.message.naming_series;
+        });
       frappe.db
         .get_value(
           "Property Setter",
@@ -49,33 +55,33 @@ frappe.ui.form.on("Quotation", {
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
 
-              if (frm.doc.party_name.includes("-A%") && item.includes("-A-")) {
+              if (naming_series.includes("-A.") && item.includes("-A-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-G%") &&
+                naming_series.includes("-G.") &&
                 item.includes("-G-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-D%") &&
+                naming_series.includes("-D.") &&
                 item.includes("-D-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-GR") &&
+                naming_series.includes("-GR.") &&
                 item.includes("-GR-")
               ) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
               } else if (
-                frm.doc.party_name.includes("-AR") &&
+                naming_series.includes("-AR.") &&
                 item.includes("-AR-")
               ) {
                 console.log(item);
@@ -83,7 +89,7 @@ frappe.ui.form.on("Quotation", {
                 break; // Exit loop once a match is found
               }
             }
-            console.log(selected_series)
+            console.log(selected_series);
             // Set the selected series as the naming series, or use the default
             frm.set_value(
               "naming_series",

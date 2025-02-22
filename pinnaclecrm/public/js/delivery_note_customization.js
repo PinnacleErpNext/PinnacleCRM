@@ -1,6 +1,10 @@
 frappe.ui.form.on("Delivery Note", {
   refresh: function (frm) {
-    console.log("Triggered! from DN");
+    frm.page.wrapper.ready(() => {
+      frm.page.remove_inner_button("Shipment", "Create");
+      frm.page.remove_inner_button("Delivery Trip", "Create");
+      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    });
 
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.items[0].against_sales_order) {
@@ -83,12 +87,5 @@ frappe.ui.form.on("Delivery Note", {
     } else {
       console.log("Party name not available or naming series already set");
     }
-  },
-  onload: function (frm) {
-    setTimeout(function () {
-      frm.page.remove_inner_button("Shipment", "Create");
-      frm.page.remove_inner_button("Delivery Trip", "Create");
-      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
-    }, 500);
   },
 });

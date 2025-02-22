@@ -1,6 +1,11 @@
 frappe.ui.form.on("Sales Invoice", {
   refresh: function (frm) {
-    console.log("Triggered! from SI");
+    frm.page.wrapper.ready(() => {
+      frm.page.remove_inner_button("Dunning", "Create");
+      frm.page.remove_inner_button("Maintenance Schedule", "Create");
+      frm.page.remove_inner_button("Payment Request", "Create");
+      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    });
 
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.items[0].delivery_note) {
@@ -56,7 +61,7 @@ frappe.ui.form.on("Sales Invoice", {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
-              }else if (
+              } else if (
                 frm.doc.items[0].sales_order.includes("-AR-") &&
                 frm.doc.items[0].delivery_note.includes("-AR-") &&
                 item.includes("-AR-")
@@ -88,13 +93,5 @@ frappe.ui.form.on("Sales Invoice", {
     } else {
       console.log("Party name not available or naming series already set");
     }
-  },
-  onload: function (frm) {
-    setTimeout(function () {
-      frm.page.remove_inner_button("Dunning", "Create");
-      frm.page.remove_inner_button("Maintenance Schedule", "Create");
-      frm.page.remove_inner_button("Payment Request", "Create");
-      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
-    }, 500);
   },
 });

@@ -1,5 +1,6 @@
 frappe.ui.form.on("Quotation", {
   refresh: function (frm) {
+    
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.party_name) {
       let naming_series;

@@ -95,6 +95,6 @@ frappe.ui.form.on("Sales Invoice", {
       frm.page.remove_inner_button("Maintenance Schedule", "Create");
       frm.page.remove_inner_button("Payment Request", "Create");
       frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
-    }, 100);
+    }, 500);
   },
 });

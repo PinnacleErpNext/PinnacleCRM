@@ -89,6 +89,6 @@ frappe.ui.form.on("Delivery Note", {
       frm.page.remove_inner_button("Shipment", "Create");
       frm.page.remove_inner_button("Delivery Trip", "Create");
       frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
-    }, 100);
+    }, 500);
   },
 });

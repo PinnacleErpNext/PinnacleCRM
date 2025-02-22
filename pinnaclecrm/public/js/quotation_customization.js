@@ -1,31 +1,4 @@
 frappe.ui.form.on("Quotation", {
-  // naming_series: function (frm) {
-  //   let seriesItemGroupMap = {};
-  //   frappe.db
-  //     .get_doc("Naming Series Mapping", frm.doc.doctype)
-  //     .then((doc) => {
-  //       doc.item_group_map.forEach((item) => {
-  //         seriesItemGroupMap[item.select_series] = item.item_group;
-  //       });
-  //       console.log(seriesItemGroupMap)
-  //       let item_grp = seriesItemGroupMap[frm.doc.naming_series];
-  //       console.log("igrp:-",item_grp)
-  //       frm.fields_dict["items"].grid.get_field("item_code").get_query =
-  //         function (doc, cdt, cdn) {
-  //           let row = locals[cdt][cdn];
-  //           return {
-  //             filters: {
-  //               item_group: item_grp,
-  //             },
-  //           };
-  //         };
-
-  //       frm.refresh_field("items");
-  //     })
-  //     .catch((err) => {
-  //       console.error("Error fetching Item Naming Series Mapping:", err);
-  //     });
-  // },
   refresh: function (frm) {
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.party_name) {
@@ -91,10 +64,7 @@ frappe.ui.form.on("Quotation", {
             }
             console.log(selected_series);
             // Set the selected series as the naming series, or use the default
-            frm.set_value(
-              "naming_series",
-              selected_series || frm.doc.naming_series
-            );
+            frm.set_value("naming_series", selected_series);
 
             // Make the naming series field read-only
             frm.set_df_property("naming_series", "read_only", true);
@@ -393,7 +363,7 @@ frappe.ui.form.on("Quotation", {
                   });
 
                   address_dialog.show();
-                }, 100); // Delay to ensure form fields load properly
+                }, 500); 
               },
               error: function (err) {
                 console.error("Error while fetching address:", err);

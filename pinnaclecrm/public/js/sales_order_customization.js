@@ -85,6 +85,6 @@ frappe.ui.form.on("Sales Order", {
       frm.page.remove_inner_button("Purchase Order", "Create");
       frm.page.remove_inner_button("Project", "Create");
       frm.page.remove_inner_button("Payment Request", "Create");
-    }, 100);
+    }, 500);
   },
 });

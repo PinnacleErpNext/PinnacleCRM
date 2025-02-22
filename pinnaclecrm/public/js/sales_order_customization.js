@@ -36,11 +36,16 @@ frappe.ui.form.on("Sales Order", {
             // Find the appropriate naming series based on prevdoc_docname
             let prevdoc_name = frm.doc.items[0].prevdoc_docname;
             let selected_series = naming_series_array.find((item) => {
-              if (prevdoc_name.includes("-A-") && item.includes("-A-")) return true;
-              if (prevdoc_name.includes("-G-") && item.includes("-G-")) return true;
-              if (prevdoc_name.includes("-D-") && item.includes("-D-")) return true;
-              if (prevdoc_name.includes("-GR-") && item.includes("-GR-")) return true;
-              if (prevdoc_name.includes("-AR-") && item.includes("-AR-")) return true;
+              if (prevdoc_name.includes("-A-") && item.includes("-A-"))
+                return true;
+              if (prevdoc_name.includes("-G-") && item.includes("-G-"))
+                return true;
+              if (prevdoc_name.includes("-D-") && item.includes("-D-"))
+                return true;
+              if (prevdoc_name.includes("-GR-") && item.includes("-GR-"))
+                return true;
+              if (prevdoc_name.includes("-AR-") && item.includes("-AR-"))
+                return true;
               return false;
             });
 
@@ -52,6 +57,7 @@ frappe.ui.form.on("Sales Order", {
 
             // Make the naming series field read-only
             frm.set_df_property("naming_series", "read_only", true);
+            pinnaclecrm.utils.applyItemGroupFilter(frm);
           } else {
             console.log("No options found for naming_series");
             frm.set_value("naming_series", "");

@@ -98,6 +98,7 @@ frappe.ui.form.on("Quotation", {
 
             // Make the naming series field read-only
             frm.set_df_property("naming_series", "read_only", true);
+            pinnaclecrm.utils.applyItemGroupFilter(frm);
           } else {
             console.log("No options found for naming_series");
             frm.set_value("naming_series", "");

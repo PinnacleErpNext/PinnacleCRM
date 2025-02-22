@@ -29,7 +29,6 @@ $(document).on("page-change", function () {
                   frappe.db
                     .get_doc("Naming Series Mapping", doctype)
                     .then((namingSeries) => {
-
                       namingSeries.department_map.forEach((entry) => {
                         const { department, select_series } = entry;
 
@@ -98,22 +97,62 @@ $(document).on("page-change", function () {
     });
 
     // Apply item group filter
-    frappe.ui.form.on(doctype, {
-      naming_series: function (frm) {
-        console.log(seriesToItemGroup)
-        let item_grp = seriesToItemGroup[frm.doc.naming_series];
-        if(!item_grp){
-          frappe.show_alert(
-            {
-              message: __("No filter applied as there is no item group associated."),
-              indicator: "orange",
-            },
-            10
-          );
-        }
+    // frappe.ui.form.on(doctype, {
+    //   refresh: function (frm) {
+    //     console.log(seriesToItemGroup);
+    //     let item_grp = seriesToItemGroup[frm.doc.naming_series];
+    //     if (!item_grp) {
+    //       frappe.show_alert(
+    //         {
+    //           message: __(
+    //             "No filter applied as there is no item group associated."
+    //           ),
+    //           indicator: "orange",
+    //         },
+    //         10
+    //       );
+    //     }
+    //     let is_item = frm.fields_dict["items"]
+
+    //     if (is_item) {
+    //       frm.fields_dict["items"].grid.get_field("item_code").get_query =
+    //         function (doc, cdt, cdn) {
+    //           let row = locals[cdt][cdn];
+    //           return {
+    //             filters: {
+    //               item_group: item_grp,
+    //             },
+    //           };
+    //         };
+
+    //       frm.refresh_field("items");
+    //     }
+    //   },
+    // });
+
+    frappe.provide("pinnaclecrm.utils");
+
+    pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
+      console.log(seriesToItemGroup);
+
+      let item_grp = seriesToItemGroup[frm.doc.naming_series];
+      console.log(`igrp:${item_grp}`)
+      if (!item_grp) {
+        frappe.show_alert(
+          {
+            message: __(
+              "No filter applied as there is no item group associated."
+            ),
+            indicator: "orange",
+          },
+          10
+        );
+        return; // Exit if no item group is associated
+      }
+
+      if (frm.fields_dict["items"] && frm.fields_dict["items"].grid) {
         frm.fields_dict["items"].grid.get_field("item_code").get_query =
           function (doc, cdt, cdn) {
-            let row = locals[cdt][cdn];
             return {
               filters: {
                 item_group: item_grp,
@@ -122,7 +161,7 @@ $(document).on("page-change", function () {
           };
 
         frm.refresh_field("items");
-      },
-    });
+      }
+    };
   }
 });

@@ -3,7 +3,8 @@ frappe.provide("pinnaclecrm.utils");
 window.seriesToItemGroup = {};
 window.departmentToSeries = {};
 
-pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
+// Function to apply Naming Series options based on the user's department
+pinnaclecrm.utils.applyNamingOptions = function (frm) {
   if (!frm) return;
 
   let doctype = frm.doctype;
@@ -34,19 +35,13 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
           .get_doc("Naming Series Mapping", doctype)
           .then((namingSeries) => {
             window.departmentToSeries = {};
-            window.seriesToItemGroup = {};
 
+            // Populate department-to-series mapping
             namingSeries?.department_map?.forEach(
               ({ department, select_series }) => {
                 departmentToSeries[department] =
                   departmentToSeries[department] || [];
                 departmentToSeries[department].push(select_series);
-              }
-            );
-
-            namingSeries?.item_group_map?.forEach(
-              ({ select_series, item_group }) => {
-                seriesToItemGroup[select_series] = item_group;
               }
             );
 
@@ -69,30 +64,6 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
                 indicator: "red",
               });
             }
-
-            let item_grp = seriesToItemGroup[frm.doc.naming_series];
-
-            if (!item_grp) {
-              frappe.show_alert(
-                {
-                  message: __(
-                    "No filter applied as there is no item group associated."
-                  ),
-                  indicator: "orange",
-                },
-                10
-              );
-              return;
-            }
-
-            if (frm.fields_dict["items"]?.grid) {
-              frm.fields_dict["items"].grid.get_field("item_code").get_query =
-                function (doc, cdt, cdn) {
-                  return { filters: { item_group: item_grp } };
-                };
-
-              frm.refresh_field("items");
-            }
           })
           .catch((error) =>
             console.error("Error fetching Naming Series:", error)
@@ -102,9 +73,58 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
   });
 };
 
-// Event Listener for page change
+// Function to apply item group filter based on the selected naming series
+pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
+  if (!frm) return;
+
+  let doctype = frm.doctype;
+
+  frappe.db.exists("Naming Series Mapping", doctype).then((exists) => {
+    if (!exists) return;
+
+    frappe.db
+      .get_doc("Naming Series Mapping", doctype)
+      .then((namingSeries) => {
+        window.seriesToItemGroup = {};
+
+        // Populate series-to-item-group mapping
+        namingSeries?.item_group_map?.forEach(
+          ({ select_series, item_group }) => {
+            seriesToItemGroup[select_series] = item_group;
+          }
+        );
+
+        let item_grp = seriesToItemGroup[frm.doc.naming_series];
+
+        if (!item_grp) {
+          frappe.show_alert(
+            {
+              message: __(
+                "No filter applied as there is no item group associated."
+              ),
+              indicator: "orange",
+            },
+            10
+          );
+          return;
+        }
+
+        if (frm.fields_dict["items"]?.grid) {
+          frm.fields_dict["items"].grid.get_field("item_code").get_query =
+            function (doc, cdt, cdn) {
+              return { filters: { item_group: item_grp } };
+            };
+
+          frm.refresh_field("items");
+        }
+      })
+      .catch((error) => console.error("Error fetching Naming Series:", error));
+  });
+};
+
+// Event Listener for page change to apply naming options
 $(document).on("page-change", function () {
   if (frappe?.container?.page?.frm) {
-    pinnaclecrm.utils.applyItemGroupFilter(frappe.container.page.frm);
+    pinnaclecrm.utils.applyNamingOptions(frappe.container.page.frm);
   }
 });

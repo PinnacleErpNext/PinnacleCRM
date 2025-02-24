@@ -12,16 +12,35 @@ frappe.listview_settings["Sales Order"] = {
 
 frappe.ui.form.on("Sales Order", {
   refresh: function (frm) {
-    frm.page.wrapper.ready(() => {
-      frm.page.remove_inner_button("Pick List", "Create");
-      frm.page.remove_inner_button("Work Order", "Create");
-      frm.page.remove_inner_button("Material Request", "Create");
-      frm.page.remove_inner_button("Request For Raw Materials", "Create");
-      frm.page.remove_inner_button("Purchase Order", "Create");
-      frm.page.remove_inner_button("Project", "Create");
-      frm.page.remove_inner_button("Payment Request", "Create");
+    if (!frm.page.wrapper[0]) return; 
+
+    let observer = new MutationObserver((mutations, observer) => {
+      let actionButton = frm.page.wrapper.find('[data-label="Action"]');
+      let removed = false;
+
+      if (actionButton.length) {
+        actionButton.hide();
+        removed = true;
+      }
+
+      // Remove specific inner buttons only if they exist
+      ["Opportunity", "Customer", "Prospect"].forEach((btn) => {
+        if (
+          frm.page.inner_toolbar &&
+          frm.page.inner_toolbar.find(`[data-label="${btn}"]`).length
+        ) {
+          frm.page.remove_inner_button(btn, "Create");
+          removed = true;
+        }
+      });
+
+      // Disconnect observer after removing buttons to prevent unnecessary calls
+      if (removed) {
+        observer.disconnect();
+      }
     });
-    console.log("Triggered!");
+
+    observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
     // Check if the document is new and the first item's prevdoc_docname exists
     if (
       frm.is_new() &&

@@ -1,10 +1,27 @@
 frappe.ui.form.on("Delivery Note", {
   refresh: function (frm) {
-    frm.page.wrapper.ready(() => {
-      frm.page.remove_inner_button("Shipment", "Create");
-      frm.page.remove_inner_button("Delivery Trip", "Create");
-      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    let observer = new MutationObserver((mutations, observer) => {
+      let removed = false;
+
+      ["Shipment", "Delivery Trip"].forEach((btn) => {
+        if (frm.page.inner_toolbar?.find(`[data-label="${btn}"]`).length) {
+          frm.page.remove_inner_button(btn, "Create");
+          removed = true;
+        }
+      });
+
+      let eWaybillButton = frm.page.wrapper.find('[data-label="e-Waybill"]');
+      if (eWaybillButton.length) {
+        eWaybillButton.hide();
+        removed = true;
+      }
+
+      if (removed) observer.disconnect();
     });
+
+    if (frm.page.wrapper[0]) {
+      observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
+    }
 
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.items[0].against_sales_order) {

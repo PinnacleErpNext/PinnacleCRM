@@ -1,11 +1,53 @@
 frappe.ui.form.on("Sales Invoice", {
   refresh: function (frm) {
-    frm.page.wrapper.ready(() => {
-      frm.page.remove_inner_button("Dunning", "Create");
-      frm.page.remove_inner_button("Maintenance Schedule", "Create");
-      frm.page.remove_inner_button("Payment Request", "Create");
-      frm.page.wrapper.find('[data-label="e-Waybill"]').hide();
+    if (!frm.page.wrapper[0]) return; // Ensure the wrapper exists
+
+    let observer = new MutationObserver((mutations, observer) => {
+      let actionButton = frm.page.wrapper.find('[data-label="Action"]');
+      let removed = false;
+
+      if (actionButton.length) {
+        actionButton.hide();
+        removed = true;
+      }
+
+      // Remove specific inner buttons only if they exist
+      ["Opportunity", "Customer", "Prospect"].forEach((btn) => {
+        if (
+          frm.page.inner_toolbar &&
+          frm.page.inner_toolbar.find(`[data-label="${btn}"]`).length
+        ) {
+          frm.page.remove_inner_button(btn, "Create");
+          removed = true;
+        }
+      });
+
+      // Additional buttons to remove
+      ["Dunning", "Maintenance Schedule", "Payment Request"].forEach((btn) => {
+        if (
+          frm.page.inner_toolbar &&
+          frm.page.inner_toolbar.find(`[data-label="${btn}"]`).length
+        ) {
+          frm.page.remove_inner_button(btn, "Create");
+          removed = true;
+        }
+      });
+
+      // Hide e-Waybill button if present
+      let eWaybillButton = frm.page.wrapper.find('[data-label="e-Waybill"]');
+      if (eWaybillButton.length) {
+        eWaybillButton.hide();
+        removed = true;
+      }
+
+      // Disconnect observer after removing buttons to prevent unnecessary calls
+      if (removed) {
+        observer.disconnect();
+      }
     });
+
+    // Start observing only if wrapper exists
+    observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
 
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.items[0].delivery_note) {

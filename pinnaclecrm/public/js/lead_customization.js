@@ -1,11 +1,18 @@
 frappe.ui.form.on("Lead", {
   refresh: function (frm) {
-    frm.page.wrapper.ready(() => {
-      frm.page.wrapper.find('[data-label="Action"]').hide();
-      frm.page.remove_inner_button("Opportunity", "Create");
-      frm.page.remove_inner_button("Customer", "Create");
-      frm.page.remove_inner_button("Prospect", "Create");
+    let observer = new MutationObserver((mutations, observer) => {
+      let button = frm.page.wrapper.find('[data-label="Action"]');
+      if (button.length) {
+        button.hide();
+        frm.page.remove_inner_button("Opportunity", "Create");
+        frm.page.remove_inner_button("Customer", "Create");
+        frm.page.remove_inner_button("Prospect", "Create");
+        observer.disconnect();
+      }
     });
+
+    observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
+
     frm.set_df_property("status", "options", [
       "Open",
       "Interested",

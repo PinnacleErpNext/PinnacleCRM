@@ -1,18 +1,29 @@
 frappe.listview_settings["Sales Order"] = {
   onload: function (listview) {
-    // Check if the current user matches the specific user
-    if (frappe.session.user_email === "admin@example.com") {
-      frappe.route_options = {
-        docstatus: 0,
-        custom_payment_mode: ["in", ["Credit", "Others"]],
-      };
+    if (frappe.session && frappe.session.user_email) {
+      console.log("User Email:", frappe.session.user_email);
+
+      if (
+        ["abhishek.porwal@pinnaclefsa.co.in", "arjit@mytaxcafe.com"].includes(
+          frappe.session.user_email
+        )
+      ) {
+        console.log("Applying route options...");
+        frappe.route_options = {
+          docstatus: 0,
+          custom_payment_mode: ["in", ["Credit", "Others"]],
+        };
+        listview.refresh(); // Refresh to apply the filters
+      }
+    } else {
+      console.error("frappe.session.user_email is not available!");
     }
   },
 };
 
 frappe.ui.form.on("Sales Order", {
   refresh: function (frm) {
-    if (!frm.page.wrapper[0]) return; 
+    if (!frm.page.wrapper[0]) return;
 
     let observer = new MutationObserver((mutations, observer) => {
       let actionButton = frm.page.wrapper.find('[data-label="Action"]');

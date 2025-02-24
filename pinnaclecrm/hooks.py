@@ -57,7 +57,9 @@ doctype_js = {
     "Sales Invoice" : "public/js/sales_invoice_customization.js",
     # "Quotation" : "public/js/customer_kyc.js",
     }
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {
+    "Sales Order" : "public/js/sales_order_customization.js",
+    }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 

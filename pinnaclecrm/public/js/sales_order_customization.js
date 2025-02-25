@@ -28,29 +28,58 @@ frappe.ui.form.on("Sales Order", {
       let actionButton = frm.page.wrapper.find('[data-label="Action"]');
       let removed = false;
 
+      // Hide the main action button
       if (actionButton.length) {
         actionButton.hide();
         removed = true;
       }
 
-      // Remove specific inner buttons only if they exist
-      ["Opportunity", "Customer", "Prospect"].forEach((btn) => {
-        if (
-          frm.page.inner_toolbar &&
-          frm.page.inner_toolbar.find(`[data-label="${btn}"]`).length
-        ) {
-          frm.page.remove_inner_button(btn, "Create");
+      // Hide "Update Items" and "Status" buttons
+      let buttonsToHide = ["Update%20Items", "Status"];
+
+      buttonsToHide.forEach((btn) => {
+        let button = frm.page.wrapper.find(`[data-label="${btn}"]`);
+        if (button.length) {
+          button.hide();
           removed = true;
         }
       });
 
-      // Disconnect observer after removing buttons to prevent unnecessary calls
+      // Allowed create buttons
+      let allowedCreateButtons = [
+        "Pick List",
+        "Work Order",
+        "Material Request",
+        "Request For Raw Materials",
+        "Purchase Order",
+        "Project",
+        "Payment Request",
+      ];
+
+      // Remove unwanted buttons inside "Create"
+      if (frm.page.inner_toolbar) {
+        frm.page.inner_toolbar
+          .find(".dropdown-menu .dropdown-item")
+          .each(function () {
+            let btnText = $(this).text().trim();
+
+            // Remove buttons that are not in the allowed list
+            if (!allowedCreateButtons.includes(btnText)) {
+              $(this).remove();
+              removed = true;
+            }
+          });
+      }
+
+      // Disconnect observer after making changes to prevent unnecessary calls
       if (removed) {
         observer.disconnect();
       }
     });
 
+    // Observe changes in the page wrapper
     observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
+
     // Check if the document is new and the first item's prevdoc_docname exists
     if (
       frm.is_new() &&

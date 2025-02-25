@@ -10,7 +10,6 @@ frappe.listview_settings["Sales Order"] = {
       ) {
         console.log("Applying route options...");
         frappe.route_options = {
-          docstatus: 0,
           custom_payment_mode: ["in", ["Credit", "Others"]],
         };
         listview.refresh(); // Refresh to apply the filters

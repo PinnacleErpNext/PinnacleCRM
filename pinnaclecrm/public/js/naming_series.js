@@ -80,7 +80,13 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
   let doctype = frm.doctype;
 
   frappe.db.exists("Naming Series Mapping", doctype).then((exists) => {
-    if (!exists) return;
+    if (!exists) {
+      frappe.show_alert({
+        message: __("No Naming Series Mapping Found!"),
+        indicator: "red",
+      });
+      return;
+    }
 
     frappe.db
       .get_doc("Naming Series Mapping", doctype)
@@ -93,6 +99,14 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
             seriesToItemGroup[select_series] = item_group;
           }
         );
+
+        if (!frm.doc.naming_series || frm.doc.naming_series.trim() === "") {
+          frappe.show_alert({
+            message: __("Naming Series not found"),
+            indicator: "red",
+          });
+          return;
+        }
 
         let item_grp = seriesToItemGroup[frm.doc.naming_series];
 

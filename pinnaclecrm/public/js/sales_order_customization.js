@@ -24,60 +24,51 @@ frappe.ui.form.on("Sales Order", {
   refresh: function (frm) {
     if (!frm.page.wrapper[0]) return;
 
-    let observer = new MutationObserver((mutations, observer) => {
-      let actionButton = frm.page.wrapper.find('[data-label="Action"]');
-      let removed = false;
+    // Define the array of button labels that should be removed
+    let buttonsToHide = [
+      "Pick List",
+      "Work Order",
+      "Material Request",
+      "Request For Raw Materials",
+      "Purchase Order",
+      "Project",
+      "Payment Request",
+    ];
 
-      // Hide the main action button
-      if (actionButton.length) {
-        actionButton.hide();
-        removed = true;
-      }
+    // Flag to indicate whether any unwanted button was removed
+    let removed = false;
 
-      // Hide "Update Items" and "Status" buttons
-      let buttonsToHide = ["Update%20Items", "Status"];
-
-      buttonsToHide.forEach((btn) => {
-        let button = frm.page.wrapper.find(`[data-label="${btn}"]`);
-        if (button.length) {
-          button.hide();
-          removed = true;
-        }
-      });
-
-      // Allowed create buttons
-      let allowedCreateButtons = [
-        "Pick List",
-        "Work Order",
-        "Material Request",
-        "Request For Raw Materials",
-        "Purchase Order",
-        "Project",
-        "Payment Request",
-      ];
-
-      // Remove unwanted buttons inside "Create"
+    // Create a MutationObserver to watch for changes in the page wrapper
+    let observer = new MutationObserver((mutations, observerInstance) => {
+      // Check if the inner toolbar exists
       if (frm.page.inner_toolbar) {
+        // Find all dropdown items inside the dropdown menu
         frm.page.inner_toolbar
           .find(".dropdown-menu .dropdown-item")
           .each(function () {
+            // Get the trimmed text of the button
             let btnText = $(this).text().trim();
 
-            // Remove buttons that are not in the allowed list
-            if (!allowedCreateButtons.includes(btnText)) {
+            // Compare in a case-insensitive way:
+            let shouldHide = buttonsToHide.some(
+              (btn) => btn.toLowerCase() === btnText.toLowerCase()
+            );
+
+            // If the button's label matches one in our list, remove it
+            if (shouldHide) {
               $(this).remove();
               removed = true;
             }
           });
       }
 
-      // Disconnect observer after making changes to prevent unnecessary calls
+      // Disconnect the observer after making changes
       if (removed) {
-        observer.disconnect();
+        observerInstance.disconnect();
       }
     });
 
-    // Observe changes in the page wrapper
+    // Start observing changes in the page wrapper element
     observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
 
     // Check if the document is new and the first item's prevdoc_docname exists
@@ -115,7 +106,12 @@ frappe.ui.form.on("Sales Order", {
                 return true;
               return false;
             });
-
+            if (!selected_series) {
+              frappe.show_alert({
+                message: __("Series Migration Failed!"),
+                indicator: "red",
+              });
+            }
             // Set the selected naming series or fallback to the first option
             frm.set_value(
               "naming_series",

@@ -21,7 +21,7 @@ frappe.ui.form.on("Quotation", {
                   .map((option) => option.trim());
 
                 // Initialize a variable to track the selected series
-                let selected_series = null;
+                let selected_series;
 
                 // Use a standard for loop to allow break statement
                 for (let i = 0; i < naming_series_array.length; i++) {
@@ -61,7 +61,12 @@ frappe.ui.form.on("Quotation", {
                     break; // Exit loop once a match is found
                   }
                 }
-                console.log(selected_series);
+                if (!selected_series) {
+                  frappe.show_alert({
+                    message: __("Series Migration Failed!"),
+                    indicator: "red",
+                  });
+                }
                 // Set the selected series as the naming series, or use the default
                 frm.set_value("naming_series", selected_series);
 

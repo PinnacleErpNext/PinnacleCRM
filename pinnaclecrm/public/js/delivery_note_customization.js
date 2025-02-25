@@ -39,7 +39,7 @@ frappe.ui.form.on("Delivery Note", {
               .map((option) => option.trim());
             console.log(naming_series_array);
             // Initialize a variable to track the selected series
-            let selected_series = null;
+            let selected_series;
             // Use a standard for loop to allow break statement
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
@@ -82,7 +82,12 @@ frappe.ui.form.on("Delivery Note", {
                 break; // Exit loop once a match is found
               }
             }
-
+            if (!selected_series) {
+              frappe.show_alert({
+                message: __("Series Migration Failed!"),
+                indicator: "red",
+              });
+            }
             // Set the selected series as the naming series, or use the default
             frm.set_value(
               "naming_series",

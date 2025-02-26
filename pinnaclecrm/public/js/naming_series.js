@@ -5,6 +5,7 @@ window.departmentToSeries = {};
 
 // Function to apply Naming Series options based on the user's department
 pinnaclecrm.utils.applyNamingOptions = function (frm) {
+  if (frappe.session.user === "Administrator") return;
   if (!frm) return;
 
   let doctype = frm.doctype;
@@ -75,6 +76,7 @@ pinnaclecrm.utils.applyNamingOptions = function (frm) {
 
 // Function to apply item group filter based on the selected naming series
 pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
+  if (frappe.session.user === "Administrator") return;
   if (!frm) return;
 
   let doctype = frm.doctype;

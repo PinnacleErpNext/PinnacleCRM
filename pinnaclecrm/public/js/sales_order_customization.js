@@ -1,21 +1,86 @@
-frappe.listview_settings["Sales Order"] = {
-  onload: function (listview) {
-    if (frappe.session && frappe.session.user_email) {
-      console.log("User Email:", frappe.session.user_email);
+var original_sales_order_onload =
+  frappe.listview_settings["Sales Order"].onload;
 
+frappe.listview_settings["Sales Order"] = {
+  add_fields: [
+    "base_grand_total",
+    "customer_name",
+    "currency",
+    "delivery_date",
+    "per_delivered",
+    "per_billed",
+    "status",
+    "order_type",
+    "name",
+    "skip_delivery_note",
+  ],
+  get_indicator: function (doc) {
+    if (doc.status === "Closed") {
+      return [__("Closed"), "green", "status,=,Closed"];
+    } else if (doc.status === "On Hold") {
+      return [__("On Hold"), "orange", "status,=,On Hold"];
+    } else if (doc.status === "Completed") {
+      return [__("Completed"), "green", "status,=,Completed"];
+    } else if (!doc.skip_delivery_note && flt(doc.per_delivered) < 100) {
+      if (frappe.datetime.get_diff(doc.delivery_date) < 0) {
+        return [
+          __("Overdue"),
+          "red",
+          "per_delivered,<,100|delivery_date,<,Today|status,!=,Closed",
+        ];
+      } else if (flt(doc.grand_total) === 0) {
+        return [
+          __("To Deliver"),
+          "orange",
+          "per_delivered,<,100|grand_total,=,0|status,!=,Closed",
+        ];
+      } else if (flt(doc.per_billed) < 100) {
+        return [
+          __("To Deliver and Bill"),
+          "orange",
+          "per_delivered,<,100|per_billed,<,100|status,!=,Closed",
+        ];
+      } else {
+        return [
+          __("To Deliver"),
+          "orange",
+          "per_delivered,<,100|per_billed,=,100|status,!=,Closed",
+        ];
+      }
+    } else if (
+      flt(doc.per_delivered) === 100 &&
+      flt(doc.grand_total) !== 0 &&
+      flt(doc.per_billed) < 100
+    ) {
+      return [
+        __("To Bill"),
+        "orange",
+        "per_delivered,=,100|per_billed,<,100|status,!=,Closed",
+      ];
+    } else if (doc.skip_delivery_note && flt(doc.per_billed) < 100) {
+      return [__("To Bill"), "orange", "per_billed,<,100|status,!=,Closed"];
+    }
+  },
+  onload: function (listview) {
+    if (original_sales_order_onload) {
+      original_sales_order_onload(listview);
+    }
+
+    let user_email = frappe.boot.user.email || frappe.session.user_email;
+    if (user_email) {
+      console.log("User Email:", user_email);
       if (
         ["abhishek.porwal@pinnaclefsa.co.in", "arjit@mytaxcafe.com"].includes(
-          frappe.session.user_email
+          user_email
         )
       ) {
         console.log("Applying route options...");
         frappe.route_options = {
           custom_payment_mode: ["in", ["Credit", "Others"]],
         };
-        listview.refresh(); // Refresh to apply the filters
+
+        listview.refresh();
       }
-    } else {
-      console.error("frappe.session.user_email is not available!");
     }
   },
 };

@@ -1,4 +1,7 @@
 frappe.ui.form.on("Lead", {
+  naming_series: function (frm) {
+    pinnaclecrm.utils.applyItemGroupFilter(frm);
+  },
   refresh: function (frm) {
     let observer = new MutationObserver((mutations, observer) => {
       let button = frm.page.wrapper.find('[data-label="Action"]');

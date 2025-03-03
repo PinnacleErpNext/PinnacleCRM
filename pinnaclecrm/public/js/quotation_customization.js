@@ -1,4 +1,7 @@
 frappe.ui.form.on("Quotation", {
+  naming_series: function (frm) {
+    pinnaclecrm.utils.applyItemGroupFilter(frm);
+  },
   refresh: function (frm) {
     // Ensure that 'frm.doc.party_name' is available before proceeding
     if (frm.is_new() && frm.doc.party_name) {

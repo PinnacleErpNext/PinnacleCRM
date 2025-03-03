@@ -1,4 +1,7 @@
 frappe.ui.form.on("Delivery Note", {
+  naming_series: function (frm) {
+    pinnaclecrm.utils.applyItemGroupFilter(frm);
+  },
   refresh: function (frm) {
     let observer = new MutationObserver((mutations, observer) => {
       let removed = false;

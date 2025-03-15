@@ -104,7 +104,7 @@ pinnaclecrm.utils.applyItemGroupFilter = function (frm) {
 
         if (!frm.doc.naming_series || frm.doc.naming_series.trim() === "") {
           frappe.show_alert({
-            message: __("Naming Series not found"),
+            message: __("Please select naming series!"),
             indicator: "red",
           });
           return;

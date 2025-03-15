@@ -90,6 +90,7 @@ frappe.ui.form.on("Sales Order", {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
   },
   refresh: function (frm) {
+    frm.set_value("naming_series", "");
     if (!frm.page.wrapper[0]) return;
 
     // Define the array of button labels that should be removed

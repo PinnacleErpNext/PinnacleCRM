@@ -3,7 +3,9 @@ frappe.ui.form.on("Sales Invoice", {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
   },
   refresh: function (frm) {
-    frm.set_value("naming_series", "");
+    if (frm.is_new()) {
+      frm.set_value("naming_series", "");
+    }
     if (!frm.page.wrapper[0]) return; // Ensure the wrapper exists
 
     let observer = new MutationObserver((mutations, observer) => {

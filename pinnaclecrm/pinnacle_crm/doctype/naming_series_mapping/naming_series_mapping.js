@@ -7,6 +7,8 @@ frappe.ui.form.on("Naming Series Mapping", {
     set_naming_options(frm, "department_map", "select_series");
     // Update naming options for the 'item_group_map' child table
     set_naming_options(frm, "item_group_map", "select_series");
+    // Update naming options for the 'customer_group_map' child table
+    set_naming_options(frm, "customer_group_map", "select_series");
   },
 });
 
@@ -23,6 +25,14 @@ frappe.ui.form.on("Item Group Map", {
     let row = frappe.get_doc(cdt, cdn); // Get the new row object
     // Update naming options for the new row in the 'item_group_map' child table
     set_naming_options(frm, "item_group_map", "select_series", row);
+  },
+});
+
+frappe.ui.form.on("Customer Group Map", {
+  customer_group_map_add: function (frm, cdt, cdn) {
+    let row = frappe.get_doc(cdt, cdn);
+
+    set_naming_options(frm, "customer_group_map", "select_series", row);
   },
 });
 

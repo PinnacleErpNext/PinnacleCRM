@@ -8,7 +8,8 @@
  "field_order": [
   "select_doctype",
   "department_map",
-  "item_group_map"
+  "item_group_map",
+  "customer_group_map"
  ],
  "fields": [
   {
@@ -29,11 +30,17 @@
    "fieldtype": "Table",
    "label": "Item Group Map",
    "options": "Item Group Map"
+  },
+  {
+   "fieldname": "customer_group_map",
+   "fieldtype": "Table",
+   "label": "Customer Group Map",
+   "options": "Customer Group Map"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-07 13:54:08.494545",
+ "modified": "2025-03-19 16:13:52.428124",
  "modified_by": "Administrator",
  "module": "Pinnacle CRM",
  "name": "Naming Series Mapping",
@@ -51,6 +58,16 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "select": 1,
+   "share": 1
   }
  ],
  "sort_field": "modified",

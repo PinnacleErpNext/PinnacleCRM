@@ -2,6 +2,11 @@ frappe.ui.form.on("Quotation", {
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
   },
+  quotation_to: function (frm) {
+    if (frm.doc.quotation_to === "Customer") {
+      pinnaclecrm.utils.applyCustomerGroupFilter(frm, "party_name");
+    }
+  },
   refresh: function (frm) {
     if (frm.is_new()) {
       frm.set_value("naming_series", "");

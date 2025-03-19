@@ -3,6 +3,64 @@ frappe.provide("pinnaclecrm.utils");
 window.seriesToItemGroup = {};
 window.departmentToSeries = {};
 
+pinnaclecrm.utils.applyCustomerGroupFilter = function (frm, fieldName) {
+  if (frappe.session.user === "Administrator") return;
+  if (!frm) return;
+
+  let doctype = frm.doctype;
+
+  frappe.db.exists("Naming Series Mapping", doctype).then((exists) => {
+    if (!exists) return; // No need to alert the user unnecessarily.
+
+    frappe.db
+      .get_doc("Naming Series Mapping", doctype)
+      .then((namingSeries) => {
+        if (!namingSeries?.customer_group_map?.length) return;
+
+        let seriesToCustomerGroup = {};
+
+        // Populate mapping between Naming Series and Customer Group
+        namingSeries.customer_group_map.forEach(
+          ({ select_series, customer_group }) => {
+            seriesToCustomerGroup[select_series] = customer_group;
+          }
+        );
+
+        if (!frm.doc.naming_series || frm.doc.naming_series.trim() === "") {
+          frappe.show_alert({
+            message: __("Please select a naming series!"),
+            indicator: "red",
+          });
+          return;
+        }
+
+        let customer_grp = seriesToCustomerGroup[frm.doc.naming_series];
+
+        if (!customer_grp) {
+          frappe.show_alert({
+            message: __(
+              "No filter applied as there is no customer group associated."
+            ),
+            indicator: "orange",
+          });
+          return;
+        }
+
+        frm.set_query(fieldName, () => {
+          return {
+            filters: {
+              customer_group: customer_grp,
+            },
+          };
+        });
+        frm.refresh_field(fieldName);
+      })
+      .catch((error) =>
+        console.error("Error fetching Naming Series Mapping:", error)
+      );
+  });
+};
+
 // Function to apply Naming Series options based on the user's department
 pinnaclecrm.utils.applyNamingOptions = function (frm) {
   if (frappe.session.user === "Administrator") return;

@@ -88,6 +88,7 @@ frappe.listview_settings["Sales Order"] = {
 frappe.ui.form.on("Sales Order", {
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
+    pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
   },
   refresh: function (frm) {
     if (frm.is_new()) {

@@ -79,24 +79,25 @@ frappe.ui.form.on("Sales Invoice", {
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
 
-              if (refrencedDoc && item.includes("-A-")) {
-                console.log(item);
+              if (refrencedDoc.includes("-A-") && item.includes("-A-")) {
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (refrencedDoc && item.includes("-G-")) {
-                console.log(item);
+              } else if (refrencedDoc.includes("-G-") && item.includes("-G-")) {
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (refrencedDoc && item.includes("-D-")) {
-                console.log(item);
+              } else if (refrencedDoc.includes("-D-") && item.includes("-D-")) {
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (refrencedDoc && item.includes("-GR-")) {
-                console.log(item);
+              } else if (
+                refrencedDoc.includes("-GR-") &&
+                item.includes("-GR-")
+              ) {
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (refrencedDoc && item.includes("-AR-")) {
-                console.log(item);
+              } else if (
+                refrencedDoc.includes("-AR-") &&
+                item.includes("-AR-")
+              ) {
                 selected_series = item;
                 break; // Exit loop once a match is found
               }

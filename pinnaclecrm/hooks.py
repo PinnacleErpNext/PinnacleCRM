@@ -50,16 +50,18 @@ app_include_js = [
 
 # include js in doctype views
 doctype_js = {
-    "Lead" : "public/js/lead_customization.js",
-    "Quotation" : "public/js/quotation_customization.js",
-    "Sales Order" : "public/js/sales_order_customization.js",
-    "Delivery Note" : "public/js/delivery_note_customization.js",
-    "Sales Invoice" : "public/js/sales_invoice_customization.js",
+    "Lead": "public/js/lead_customization.js",
+    "Quotation": "public/js/quotation_customization.js",
+    "Sales Order": "public/js/sales_order_customization.js",
+    "Delivery Note": "public/js/delivery_note_customization.js",
+    "Sales Invoice": "public/js/sales_invoice_customization.js",
+    "Address": "public/js/address_customization.js",
+    "Customer": "public/js/customer_customization.js",
     # "Quotation" : "public/js/customer_kyc.js",
-    }
+}
 doctype_list_js = {
-    "Sales Order" : "public/js/sales_order_customization.js",
-    }
+    "Sales Order": "public/js/sales_order_customization.js",
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -153,18 +155,17 @@ doctype_list_js = {
 # Hook on document methods and events
 
 doc_events = {
-	# "*": {
-	# 	"on_update": "method",
-	# 	"on_cancel": "method",
-	# 	"on_trash": "method"
-	# }
- 
- "Customer": {
+    # "*": {
+    # 	"on_update": "method",
+    # 	"on_cancel": "method",
+    # 	"on_trash": "method"
+    # }
+    "Customer": {
         "on_trash": "pinnaclecrm.events.dummy_customer.prevent_dummy_customer_deletion"
     },
- "Sales Order": {
-     "before_save": "pinnaclecrm.events.so_before_save.custom_before_save"
- }
+    "Sales Order": {
+        "before_save": "pinnaclecrm.events.so_before_save.custom_before_save"
+    },
 }
 
 # Scheduled Tasks
@@ -263,4 +264,3 @@ doc_events = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-

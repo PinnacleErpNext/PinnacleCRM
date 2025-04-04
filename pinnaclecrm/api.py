@@ -1,56 +1,86 @@
 import frappe
+import requests
 from frappe import _
 import json
 from erpnext.selling.doctype.quotation.quotation import _make_customer
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 
+
 @frappe.whitelist(allow_guest=True)
-def create_customer(address, src):
+def create_and_update_address(address, src, addr_name=None):
     address = json.loads(address)
-    print(address)
-    print(src)
     try:
         # Create the customer (assumes _make_customer is defined and works as expected)
-        quotation = frappe.get_doc("Quotation",src)
+        quotation = frappe.get_doc("Quotation", src)
         # frappe.throw(quotation.party_name)
-        
-        # Create the address
-        newAddress = frappe.get_doc({
-            "doctype": 'Address',
-            "docstatus": 0,
-            "address_title": quotation.party_name,
-            "address_type": address.get('address_type'),
-            "address_line1": address.get('address_line1'),
-            "address_line2": address.get('address_line2'),
-            "city": address.get('city'),
-            "state": address.get('state'),
-            "country": address.get('country'),
-            "pincode": address.get('postal_code'),
-            "gstin": address.get('gst_in'),
-            "gst_category": address.get('gst_category'),
-            "is_primary_address":1,
-        })
+        if addr_name is not None:
+            addr_doc = frappe.get_doc("Address", addr_name)
 
-        # Link the address to the customer
-        newAddress.append(
-            "links", {
-                "link_doctype": quotation.quotation_to,
-                "link_name": quotation.party_name  # Use customer.name, not the object itself
+            addr_doc.update(
+                {
+                    "address_title": quotation.party_name,
+                    "address_type": address.get("address_type"),
+                    "address_line1": address.get("address_line1"),
+                    "address_line2": address.get("address_line2"),
+                    "city": address.get("city"),
+                    "state": address.get("state"),
+                    "country": address.get("country"),
+                    "pincode": address.get("pincode"),
+                    "gstin": address.get("gstin"),
+                    "gst_category": address.get("gst_category"),
+                    "is_primary_address": 1,
+                }
+            )
+            addr_doc.save()
+            return {
+                "message": "Customer Address updated successfully",
+                "status": 200,
             }
-        )
+        else:
+            # Create the address
+            newAddress = frappe.get_doc(
+                {
+                    "doctype": "Address",
+                    "docstatus": 0,
+                    "address_title": quotation.party_name,
+                    "address_type": address.get("address_type"),
+                    "address_line1": address.get("address_line1"),
+                    "address_line2": address.get("address_line2"),
+                    "city": address.get("city"),
+                    "state": address.get("state"),
+                    "country": address.get("country"),
+                    "pincode": address.get("pincode"),
+                    "gstin": address.get("gstin"),
+                    "gst_category": address.get("gst_category"),
+                    "is_primary_address": 1,
+                }
+            )
 
-        # Insert the address
-        newAddress.insert()
+            # Link the address to the customer
+            newAddress.append(
+                "links",
+                {
+                    "link_doctype": quotation.quotation_to,
+                    "link_name": quotation.party_name,  # Use customer.name, not the object itself
+                },
+            )
 
-        # Return success message
-        return {"message": "Customer and Address created successfully", "status": 200}
-    
+            # Insert the address
+            newAddress.insert()
+
+            # Return success message
+            return {
+                "message": "Customer Address created successfully",
+                "status": 200,
+            }
+
     except Exception as e:
         # Handle any errors that occur
         frappe.log_error(f"Error in creating customer or address: {str(e)}")
         return {"message": f"Error: {str(e)}", "status": 500}
 
-#API get address
+
+# API get address
 @frappe.whitelist(allow_guest=True)
 def get_address(docname):
     # Fetch Quotation document
@@ -89,6 +119,8 @@ def get_address(docname):
             dl.link_doctype = %s
         AND 
             dl.link_name = %s
+        ORDER BY a.creation DESC
+        LIMIT 1
     """
 
     # First attempt: Fetch based on Quotation name
@@ -100,7 +132,19 @@ def get_address(docname):
         filter_values = [quotation.quotation_to, quotation.party_name]
         address = frappe.db.sql(query, filter_values, as_dict=True)
 
-    
     # Return results as JSON
     return address
-        
+
+
+@frappe.whitelist(allow_guest=True)
+def get_gstin_details(gst_in):
+    url = f"https://gstapi.mygstcafe.com/managed/commonapi/v1.1/search?gstin={gst_in}"
+    headers = {
+        "CustomerId": "ASP10012",
+        "APIId": "OxponS51-sL1l-RXig-WBlb-WvnFzYwA",
+        "APISecret": "mBFqeAZdRrMZSRE",
+        "environment-type": "Production",
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    return data

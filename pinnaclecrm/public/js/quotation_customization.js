@@ -118,268 +118,9 @@ frappe.ui.form.on("Quotation", {
               },
               callback: function (res) {
                 console.log(res.message);
-                let address_data =
+                let addressData =
                   res.message && res.message.length > 0 ? res.message[0] : null;
-
-                setTimeout(() => {
-                  // Ensures all fields are properly loaded before rendering
-                  let address_dialog = new frappe.ui.Dialog({
-                    title: "Address Details",
-                    fields: [
-                      {
-                        fieldname: "address_details",
-                        fieldtype: "Section Break",
-                        options: "fa fa-map-marker",
-                      },
-                      {
-                        fieldname: "gst_category",
-                        label: "GST Category",
-                        fieldtype: "Select",
-                        options: [
-                          "Registered Regular",
-                          "Registered Composition",
-                          "Unregistered",
-                          "SEZ",
-                          "Overseas",
-                          "Deemed Export",
-                          "UIN",
-                          "Tax Deducter",
-                          "Tax Collecter",
-                          "Input Service Distributer",
-                        ].join("\n"),
-                        default: address_data
-                          ? address_data.gst_category
-                          : "Unregistered",
-                      },
-                      {
-                        fieldname: "gstin",
-                        label: "GSTIN",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.gstin : "",
-                        mandatory_depends_on:
-                          "eval:doc.gst_category != 'Unregistered'",
-                      },
-                      {
-                        fieldname: "address_title",
-                        label: "Address Title",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.address_title : "",
-                      },
-                      {
-                        fieldname: "address_type",
-                        label: "Address Type",
-                        fieldtype: "Select",
-                        options: [
-                          "Billing",
-                          "Shipping",
-                          "Office",
-                          "Personal",
-                          "Plant",
-                          "Postal",
-                          "Shop",
-                          "Subsidiary",
-                          "Warehouse",
-                          "Current",
-                          "Permanent",
-                          "Other",
-                        ].join("\n"),
-                        reqd: 1,
-                        default: address_data
-                          ? address_data.address_type
-                          : "Billing",
-                      },
-                      {
-                        fieldname: "address_line1",
-                        label: "Address Line 1",
-                        fieldtype: "Data",
-                        reqd: 1,
-                        default: address_data ? address_data.address_line1 : "",
-                      },
-                      {
-                        fieldname: "address_line2",
-                        label: "Address Line 2",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.address_line2 : "",
-                      },
-                      {
-                        fieldname: "city",
-                        label: "City/Town",
-                        fieldtype: "Data",
-                        reqd: 1,
-                        default: address_data ? address_data.city : "",
-                      },
-                      {
-                        fieldname: "county",
-                        label: "County",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.county : "",
-                      },
-                      {
-                        fieldname: "state",
-                        label: "State/Province",
-                        fieldtype: "Select",
-                        options: [
-                          "Andhra Pradesh",
-                          "Arunachal Pradesh",
-                          "Assam",
-                          "Bihar",
-                          "Chhattisgarh",
-                          "Goa",
-                          "Gujarat",
-                          "Haryana",
-                          "Himachal Pradesh",
-                          "Jharkhand",
-                          "Karnataka",
-                          "Kerala",
-                          "Madhya Pradesh",
-                          "Maharashtra",
-                          "Manipur",
-                          "Meghalaya",
-                          "Mizoram",
-                          "Nagaland",
-                          "Odisha",
-                          "Punjab",
-                          "Rajasthan",
-                          "Sikkim",
-                          "Tamil Nadu",
-                          "Telangana",
-                          "Tripura",
-                          "Uttar Pradesh",
-                          "Uttarakhand",
-                          "West Bengal",
-                          "Andaman & Nicobar Islands",
-                          "Chandigarh",
-                          "Dadra & Nagar Haveli and Daman & Diu",
-                          "Lakshadweep",
-                          "Ladakh",
-                          "Puducherry",
-                          "Jammu and Kashmir",
-                        ].join("\n"),
-                        reqd: 1,
-                        default: address_data ? address_data.state : "",
-                      },
-                      {
-                        fieldname: "country",
-                        label: "Country",
-                        fieldtype: "Link",
-                        options: "Country",
-                        reqd: 1,
-                        default: address_data ? address_data.country : "",
-                      },
-                      {
-                        fieldname: "pincode",
-                        label: "Postal Code",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.pincode : "",
-                      },
-
-                      {
-                        fieldname: "column_break0",
-                        fieldtype: "Column Break",
-                        width: "50%",
-                      },
-
-                      {
-                        fieldname: "email_id",
-                        label: "Email Address",
-                        fieldtype: "Data",
-                        options: "Email",
-                        default: address_data ? address_data.email_id : "",
-                      },
-                      {
-                        fieldname: "phone",
-                        label: "Phone",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.phone : "",
-                      },
-                      {
-                        fieldname: "fax",
-                        label: "Fax",
-                        fieldtype: "Data",
-                        default: address_data ? address_data.fax : "",
-                      },
-                      {
-                        fieldname: "is_primary_address",
-                        label: "Preferred Billing Address",
-                        fieldtype: "Check",
-                        default: address_data
-                          ? address_data.is_primary_address
-                          : 0,
-                      },
-                      {
-                        fieldname: "is_shipping_address",
-                        label: "Preferred Shipping Address",
-                        fieldtype: "Check",
-                        default: address_data
-                          ? address_data.is_shipping_address
-                          : 0,
-                      },
-                      {
-                        fieldname: "disabled",
-                        label: "Disabled",
-                        fieldtype: "Check",
-                        default: address_data ? address_data.disabled : 0,
-                      },
-                    ],
-                    size: "small",
-                    primary_action_label: address_data
-                      ? "Proceed"
-                      : "Create Sales Order",
-                    primary_action(values) {
-                      if (!values) {
-                        frappe.msgprint(__("Please fill all required fields."));
-                        return;
-                      }
-
-                      let is_changed =
-                        !address_data ||
-                        Object.keys(values).some(
-                          (key) => values[key] !== address_data[key]
-                        );
-
-                      if (is_changed) {
-                        if (address_dialog.primary_action_label === "Proceed") {
-                          // frappe.throw("Trigger!");
-                          address_dialog.hide();
-                          frappe.model.open_mapped_doc({
-                            method:
-                              "pinnaclecrm.events.make_sales_order.make_sales_order",
-                            frm: cur_frm,
-                          });
-                        } else {
-                          frappe.call({
-                            method: "pinnaclecrm.api.create_customer",
-                            args: {
-                              address: values,
-                              src: cur_frm.doc.name,
-                            },
-                            callback: (res) => {
-                              debugger;
-                              if (res.message.status == 200) {
-                                debugger;
-                                address_dialog.hide();
-                                frappe.model.open_mapped_doc({
-                                  method:
-                                    "pinnaclecrm.events.make_sales_order.make_sales_order",
-                                  frm: me.frm,
-                                });
-                              }
-                            },
-                          });
-                        }
-                      } else {
-                        address_dialog.hide();
-                        frappe.model.open_mapped_doc({
-                          method:
-                            "pinnaclecrm.events.make_sales_order.make_sales_order",
-                          frm: cur_frm,
-                        });
-                      }
-                    },
-                  });
-
-                  address_dialog.show();
-                }, 500);
+                openAddressDialog(addressData);
               },
               error: function (err) {
                 console.error("Error while fetching address:", err);
@@ -390,3 +131,349 @@ frappe.ui.form.on("Quotation", {
     }
   },
 });
+
+function getGstInDetails(gstIn) {
+  if (gstIn.length !== 15) {
+    console.error("Invalid GSTIN length");
+    return Promise.resolve(null);
+  }
+
+  return new Promise((resolve, reject) => {
+    frappe.call({
+      method: "pinnaclecrm.api.get_gstin_details",
+      args: { gst_in: gstIn },
+      callback: (res) => {
+        if (res.message && res.message.status_cd === "1") {
+          resolve(res.message.data);
+        } else {
+          reject(new Error("Invalid GSTIN details received"));
+        }
+      },
+      error: (err) => reject(err),
+    });
+  });
+}
+
+function openAddressDialog(addressData) {
+  // Clone the original data to compare against future changes.
+  let originalValues = addressData ? { ...addressData } : {};
+  let gstData;
+  // Create the Address Dialog
+  let address_dialog = new frappe.ui.Dialog({
+    title: "Address Details",
+    fields: [
+      {
+        fieldname: "address_details",
+        fieldtype: "Section Break",
+        options: "fa fa-map-marker",
+      },
+      {
+        fieldname: "gstin",
+        label: "GSTIN",
+        fieldtype: "Data",
+        default: addressData ? addressData.gstin : "",
+        onchange: async function () {
+          // Detect change for this field
+          handleFieldChange(this.df.fieldname, this.get_value());
+
+          let gstinValue = this.get_value();
+          if (gstinValue.length === 15) {
+            gstData = await getGstInDetails(gstinValue);
+            if (gstData && gstData.pradr && gstData.pradr.addr) {
+              let addr = gstData.pradr.addr;
+              let fields_dict = address_dialog.fields_dict;
+              fields_dict["address_line1"].set_value(addr.bno || "");
+              fields_dict["address_line2"].set_value(addr.st || "");
+              fields_dict["city"].set_value(addr.dst || "");
+              fields_dict["state"].set_value(addr.stcd || "");
+              fields_dict["pincode"].set_value(addr.pncd || "");
+              fields_dict["address_title"].set_value(
+                (gstData.tradeNam || "").toUpperCase()
+              );
+            } else {
+              frappe.msgprint(__("Invalid GSTIN data received."));
+            }
+          }
+        },
+      },
+      {
+        fieldname: "gst_category",
+        label: "GST Category",
+        fieldtype: "Select",
+        options: [
+          "Registered Regular",
+          "Registered Composition",
+          "Unregistered",
+          "SEZ",
+          "Overseas",
+          "Deemed Export",
+          "UIN",
+          "Tax Deducter",
+          "Tax Collecter",
+          "Input Service Distributer",
+        ].join("\n"),
+        default: addressData ? addressData.gst_category : "Unregistered",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "address_title",
+        label: "Address Title",
+        fieldtype: "Data",
+        default: addressData ? addressData.address_title : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "address_type",
+        label: "Address Type",
+        fieldtype: "Select",
+        options: [
+          "Billing",
+          "Shipping",
+          "Office",
+          "Personal",
+          "Plant",
+          "Postal",
+          "Shop",
+          "Subsidiary",
+          "Warehouse",
+          "Current",
+          "Permanent",
+          "Other",
+        ].join("\n"),
+        reqd: 1,
+        default: addressData ? addressData.address_type : "Billing",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "address_line1",
+        label: "Address Line 1",
+        fieldtype: "Data",
+        reqd: 1,
+        default: addressData ? addressData.address_line1 : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "address_line2",
+        label: "Address Line 2",
+        fieldtype: "Data",
+        default: addressData ? addressData.address_line2 : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "city",
+        label: "City/Town",
+        fieldtype: "Data",
+        reqd: 1,
+        default: addressData ? addressData.city : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "county",
+        label: "County",
+        fieldtype: "Data",
+        default: addressData ? addressData.county : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "state",
+        label: "State/Province",
+        fieldtype: "Select",
+        options: [
+          "Andhra Pradesh",
+          "Arunachal Pradesh",
+          "Assam",
+          "Bihar",
+          "Chhattisgarh",
+          "Goa",
+          "Gujarat",
+          "Haryana",
+          "Himachal Pradesh",
+          "Jharkhand",
+          "Karnataka",
+          "Kerala",
+          "Madhya Pradesh",
+          "Maharashtra",
+          "Manipur",
+          "Meghalaya",
+          "Mizoram",
+          "Nagaland",
+          "Odisha",
+          "Punjab",
+          "Rajasthan",
+          "Sikkim",
+          "Tamil Nadu",
+          "Telangana",
+          "Tripura",
+          "Uttar Pradesh",
+          "Uttarakhand",
+          "West Bengal",
+          "Andaman & Nicobar Islands",
+          "Chandigarh",
+          "Dadra & Nagar Haveli and Daman & Diu",
+          "Lakshadweep",
+          "Ladakh",
+          "Puducherry",
+          "Jammu and Kashmir",
+        ].join("\n"),
+        reqd: 1,
+        default: addressData ? addressData.state : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "country",
+        label: "Country",
+        fieldtype: "Link",
+        options: "Country",
+        reqd: 1,
+        default: addressData ? addressData.country : "India",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "pincode",
+        label: "Postal Code",
+        fieldtype: "Data",
+        default: addressData ? addressData.pincode : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "column_break0",
+        fieldtype: "Column Break",
+        width: "50%",
+      },
+      {
+        fieldname: "email_id",
+        label: "Email Address",
+        fieldtype: "Data",
+        options: "Email",
+        default: addressData ? addressData.email_id : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "phone",
+        label: "Phone",
+        fieldtype: "Data",
+        default: addressData ? addressData.phone : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "fax",
+        label: "Fax",
+        fieldtype: "Data",
+        default: addressData ? addressData.fax : "",
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "is_primary_address",
+        label: "Preferred Billing Address",
+        fieldtype: "Check",
+        default: addressData ? addressData.is_primary_address : 0,
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      {
+        fieldname: "is_shipping_address",
+        label: "Preferred Shipping Address",
+        fieldtype: "Check",
+        default: addressData ? addressData.is_shipping_address : 0,
+        onchange: function () {
+          handleFieldChange(this.df.fieldname, this.get_value());
+        },
+      },
+      // Uncomment the block below if you want to include a "disabled" field.
+      // {
+      //   fieldname: "disabled",
+      //   label: "Disabled",
+      //   fieldtype: "Check",
+      //   default: addressData ? addressData.disabled : 0,
+      //   onchange: function () {
+      //     handleFieldChange(this.df.fieldname, this.get_value());
+      //   },
+      // },
+    ],
+    size: "small",
+    primary_action_label: "Proceed",
+    primary_action(values) {
+      // Check the current label to decide on the process.
+      if (
+        address_dialog.primary_action_label === "Update address and Proceed" ||
+        address_dialog.primary_action_label === "Create address and Proceed"
+      ) {
+        // Save process: call API to update/create customer details.
+        frappe.call({
+          method: "pinnaclecrm.api.create_and_update_address",
+          args: {
+            address: values,
+            src: cur_frm.doc.name,
+            addr_name: addressData?.name,
+          },
+          callback: (res) => {
+            if (res.message.status === 200) {
+              address_dialog.hide();
+              frappe.model.open_mapped_doc({
+                method: "pinnaclecrm.events.make_sales_order.make_sales_order",
+                frm: cur_frm,
+              });
+            }
+          },
+        });
+      } else {
+        // Proceed process: simply open the mapped document.
+        address_dialog.hide();
+        frappe.model.open_mapped_doc({
+          method: "pinnaclecrm.events.make_sales_order.make_sales_order",
+          frm: cur_frm,
+        });
+      }
+    },
+  });
+
+  // This function is called whenever a field value changes.
+  // It compares current values with the original values and updates the button label.
+  function handleFieldChange(fieldname, newValue) {
+    let anyChange = false;
+    let currentValues = address_dialog.get_values() || {};
+    Object.keys(currentValues).forEach((key) => {
+      let origVal = originalValues[key] || "";
+      let currentVal = currentValues[key] || "";
+      if (origVal !== currentVal) {
+        anyChange = true;
+      }
+    });
+    let newLabel = anyChange ? "Update address and Proceed" : "Proceed";
+    // Update the label on the primary action button using jQuery.
+    if (gstData) {
+      newLabel = "Create address and Proceed";
+    }
+    address_dialog.primary_action_label = newLabel;
+    address_dialog.$wrapper.find(".modal-footer .btn-primary").text(newLabel);
+  }
+
+  address_dialog.show();
+}

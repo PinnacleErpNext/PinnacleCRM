@@ -54,9 +54,11 @@ frappe.ui.form.on("Sales Invoice", {
 
     // Start observing only if wrapper exists
     observer.observe(frm.page.wrapper[0], { childList: true, subtree: true });
-
+    const refrencedDoc =
+      ("delivery_note" in frm.doc.items[0] && frm.doc.items[0].delivery_note) ||
+      ("sales_order" in frm.doc.items[0] && frm.doc.items[0].sales_order);
     // Ensure that 'frm.doc.party_name' is available before proceeding
-    if (frm.is_new() && frm.doc.items[0].delivery_note) {
+    if (frm.is_new() && refrencedDoc) {
       frappe.db
         .get_value(
           "Property Setter",
@@ -77,43 +79,23 @@ frappe.ui.form.on("Sales Invoice", {
             for (let i = 0; i < naming_series_array.length; i++) {
               let item = naming_series_array[i];
 
-              if (
-                frm.doc.items[0].sales_order.includes("-A-") &&
-                frm.doc.items[0].delivery_note.includes("-A-") &&
-                item.includes("-A-")
-              ) {
+              if (refrencedDoc && item.includes("-A-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (
-                frm.doc.items[0].sales_order.includes("-G-") &&
-                frm.doc.items[0].delivery_note.includes("-G-") &&
-                item.includes("-G-")
-              ) {
+              } else if (refrencedDoc && item.includes("-G-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (
-                frm.doc.items[0].sales_order.includes("-D-") &&
-                frm.doc.items[0].delivery_note.includes("-D-") &&
-                item.includes("-D-")
-              ) {
+              } else if (refrencedDoc && item.includes("-D-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (
-                frm.doc.items[0].sales_order.includes("-GR-") &&
-                frm.doc.items[0].delivery_note.includes("-GR-") &&
-                item.includes("-GR-")
-              ) {
+              } else if (refrencedDoc && item.includes("-GR-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found
-              } else if (
-                frm.doc.items[0].sales_order.includes("-AR-") &&
-                frm.doc.items[0].delivery_note.includes("-AR-") &&
-                item.includes("-AR-")
-              ) {
+              } else if (refrencedDoc && item.includes("-AR-")) {
                 console.log(item);
                 selected_series = item;
                 break; // Exit loop once a match is found

@@ -93,7 +93,7 @@ frappe.ui.form.on("Sales Order", {
   refresh: function (frm) {
     if (frm.is_new()) {
       frm.set_value("naming_series", "");
-      frm.set_value("delivery_date", 1 - 1 - 2080);
+      frm.set_value("delivery_date", "2080-01-01");
     }
     if (!frm.page.wrapper[0]) return;
 

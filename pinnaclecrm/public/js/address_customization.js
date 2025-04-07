@@ -48,6 +48,13 @@ function fetchGstinDetails(frm) {
               read_only: true,
             },
             {
+              label: "Customer Name",
+              fieldname: "customer_name",
+              fieldtype: "Data",
+              default: gstData.lgnm,
+              read_only: true,
+            },
+            {
               label: "Address Line 1",
               fieldname: "address_line1",
               fieldtype: "Data",

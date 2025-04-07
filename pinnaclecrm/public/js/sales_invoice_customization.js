@@ -58,6 +58,7 @@ frappe.ui.form.on("Sales Invoice", {
       ("delivery_note" in frm.doc.items[0] && frm.doc.items[0].delivery_note) ||
       ("sales_order" in frm.doc.items[0] && frm.doc.items[0].sales_order);
     // Ensure that 'frm.doc.party_name' is available before proceeding
+
     if (frm.is_new() && refrencedDoc) {
       frappe.db
         .get_value(

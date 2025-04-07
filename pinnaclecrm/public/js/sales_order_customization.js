@@ -91,6 +91,7 @@ frappe.ui.form.on("Sales Order", {
     pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
   },
   refresh: function (frm) {
+    frm.set_value("delivery_date", 1 - 1 - 2080);
     if (frm.is_new()) {
       frm.set_value("naming_series", "");
     }

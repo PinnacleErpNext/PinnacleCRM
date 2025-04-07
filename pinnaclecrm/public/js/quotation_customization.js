@@ -132,32 +132,10 @@ frappe.ui.form.on("Quotation", {
   },
 });
 
-function getGstInDetails(gstIn) {
-  if (gstIn.length !== 15) {
-    console.error("Invalid GSTIN length");
-    return Promise.resolve(null);
-  }
-
-  return new Promise((resolve, reject) => {
-    frappe.call({
-      method: "pinnaclecrm.api.get_gstin_details",
-      args: { gst_in: gstIn },
-      callback: (res) => {
-        if (res.message && res.message.status_cd === "1") {
-          resolve(res.message.data);
-        } else {
-          reject(new Error("Invalid GSTIN details received"));
-        }
-      },
-      error: (err) => reject(err),
-    });
-  });
-}
-
 function openAddressDialog(addressData) {
-  // Clone the original data to compare against future changes.
   let originalValues = addressData ? { ...addressData } : {};
   let gstData;
+
   // Create the Address Dialog
   let address_dialog = new frappe.ui.Dialog({
     title: "Address Details",
@@ -166,35 +144,6 @@ function openAddressDialog(addressData) {
         fieldname: "address_details",
         fieldtype: "Section Break",
         options: "fa fa-map-marker",
-      },
-      {
-        fieldname: "gstin",
-        label: "GSTIN",
-        fieldtype: "Data",
-        default: addressData ? addressData.gstin : "",
-        onchange: async function () {
-          // Detect change for this field
-          handleFieldChange(this.df.fieldname, this.get_value());
-
-          let gstinValue = this.get_value();
-          if (gstinValue.length === 15) {
-            gstData = await getGstInDetails(gstinValue);
-            if (gstData && gstData.pradr && gstData.pradr.addr) {
-              let addr = gstData.pradr.addr;
-              let fields_dict = address_dialog.fields_dict;
-              fields_dict["address_line1"].set_value(addr.bno || "");
-              fields_dict["address_line2"].set_value(addr.st || "");
-              fields_dict["city"].set_value(addr.dst || "");
-              fields_dict["state"].set_value(addr.stcd || "");
-              fields_dict["pincode"].set_value(addr.pncd || "");
-              fields_dict["address_title"].set_value(
-                (gstData.tradeNam || "").toUpperCase()
-              );
-            } else {
-              frappe.msgprint(__("Invalid GSTIN data received."));
-            }
-          }
-        },
       },
       {
         fieldname: "gst_category",
@@ -214,7 +163,134 @@ function openAddressDialog(addressData) {
         ].join("\n"),
         default: addressData ? addressData.gst_category : "Unregistered",
         onchange: function () {
-          handleFieldChange(this.df.fieldname, this.get_value());
+          // Get the current value of gst_category
+          let gstCategory = this.get_value();
+
+          // Determine whether to show or hide the fields
+          let showFields = gstCategory !== "Unregistered";
+
+          // Toggle visibility of gstin field
+          address_dialog.get_field("gstin").toggle(showFields);
+
+          // Toggle visibility of fetch_gst_details button
+          address_dialog.get_field("fetch_gst_details").toggle(showFields);
+        },
+      },
+      {
+        fieldname: "gstin",
+        label: "GSTIN",
+        fieldtype: "Data",
+        default: addressData ? addressData.gstin : "",
+        hidden: true, // Initially hidden
+      },
+      {
+        fieldname: "fetch_gst_details",
+        label: "Fetch GST Details",
+        fieldtype: "Button",
+        hidden: true, // Initially hidden
+        click: async function (frm) {
+          let gstinValue = address_dialog.get_value("gstin");
+          if (gstinValue && gstinValue.length === 15) {
+            try {
+              // Inline GST details fetch (no separate function)
+              gstData = await new Promise((resolve, reject) => {
+                frappe.call({
+                  method: "pinnaclecrm.api.get_gstin_details",
+                  args: { gst_in: gstinValue },
+                  callback: (res) => {
+                    if (res.message && res.message.status_cd === "1") {
+                      resolve(res.message.data);
+                    } else {
+                      reject(new Error("Invalid GSTIN details received"));
+                    }
+                  },
+                  error: (err) => reject(err),
+                });
+              });
+
+              // Show a prompt to display the fetched GST details with a "Use This Address" button
+              frappe.prompt(
+                [
+                  {
+                    label: "GST IN",
+                    fieldname: "gst_in",
+                    fieldtype: "Data",
+                    default: gstData.gstin,
+                    read_only: true,
+                  },
+                  {
+                    label: "Customer Name",
+                    fieldname: "customer_name",
+                    fieldtype: "Data",
+                    default: gstData.lgnm,
+                    read_only: true,
+                  },
+                  {
+                    label: "Address Line 1",
+                    fieldname: "address_line1",
+                    fieldtype: "Data",
+                    default: gstData.pradr.addr.bno,
+                    read_only: true,
+                  },
+                  {
+                    label: "Address Line 2",
+                    fieldname: "address_line2",
+                    fieldtype: "Data",
+                    default: gstData.pradr.addr.st,
+                    read_only: true,
+                  },
+                  {
+                    label: "City",
+                    fieldname: "city",
+                    fieldtype: "Data",
+                    default: gstData.pradr.addr.dst,
+                    read_only: true,
+                  },
+                  {
+                    label: "State",
+                    fieldname: "state",
+                    fieldtype: "Data",
+                    default: gstData.pradr.addr.stcd,
+                    read_only: true,
+                  },
+                  {
+                    label: "Postal Code",
+                    fieldname: "pincode",
+                    fieldtype: "Data",
+                    default: gstData.pradr.addr.pncd,
+                    read_only: true,
+                  },
+                ],
+                (values) => {
+                  // This callback is triggered when the user clicks "Use This Address"
+                  console.log(values);
+                  address_dialog.set_value(
+                    "address_line1",
+                    values.address_line1.toUpperCase() || ""
+                  );
+                  address_dialog.set_value(
+                    "address_line2",
+                    values.address_line2.toUpperCase() || ""
+                  );
+                  address_dialog.set_value("city", values.city || "");
+                  address_dialog.set_value("state", values.state);
+                  address_dialog.set_value("pincode", values.pincode || "");
+                  address_dialog.set_value("gstin", values.gst_in || "");
+
+                  // Save the GST data so that the primary action label updates accordingly
+                  gstData = values;
+                  handleFieldChange();
+                },
+                __("GST Address Details"),
+                __("Use This Address")
+              );
+            } catch (error) {
+              console.error("Error fetching GST details:", error);
+              frappe.msgprint("Failed to fetch GST details.");
+            }
+          } else {
+            frappe.msgprint("Please enter a valid 15-character GSTIN.");
+          }
         },
       },
       {
@@ -406,26 +482,14 @@ function openAddressDialog(addressData) {
           handleFieldChange(this.df.fieldname, this.get_value());
         },
       },
-      // Uncomment the block below if you want to include a "disabled" field.
-      // {
-      //   fieldname: "disabled",
-      //   label: "Disabled",
-      //   fieldtype: "Check",
-      //   default: addressData ? addressData.disabled : 0,
-      //   onchange: function () {
-      //     handleFieldChange(this.df.fieldname, this.get_value());
-      //   },
-      // },
     ],
     size: "small",
     primary_action_label: "Proceed",
     primary_action(values) {
-      // Check the current label to decide on the process.
       if (
         address_dialog.primary_action_label === "Update address and Proceed" ||
         address_dialog.primary_action_label === "Create address and Proceed"
       ) {
-        // Save process: call API to update/create customer details.
         frappe.call({
           method: "pinnaclecrm.api.create_and_update_address",
           args: {
@@ -444,7 +508,6 @@ function openAddressDialog(addressData) {
           },
         });
       } else {
-        // Proceed process: simply open the mapped document.
         address_dialog.hide();
         frappe.model.open_mapped_doc({
           method: "pinnaclecrm.events.make_sales_order.make_sales_order",
@@ -454,9 +517,8 @@ function openAddressDialog(addressData) {
     },
   });
 
-  // This function is called whenever a field value changes.
-  // It compares current values with the original values and updates the button label.
-  function handleFieldChange(fieldname, newValue) {
+  // Field change detection to update the primary action button label
+  function handleFieldChange() {
     let anyChange = false;
     let currentValues = address_dialog.get_values() || {};
     Object.keys(currentValues).forEach((key) => {
@@ -467,13 +529,13 @@ function openAddressDialog(addressData) {
       }
     });
     let newLabel = anyChange ? "Update address and Proceed" : "Proceed";
-    // Update the label on the primary action button using jQuery.
-    if (gstData) {
+    if (gstData && !addressData) {
       newLabel = "Create address and Proceed";
     }
     address_dialog.primary_action_label = newLabel;
     address_dialog.$wrapper.find(".modal-footer .btn-primary").text(newLabel);
   }
 
+  // Show the dialog
   address_dialog.show();
 }

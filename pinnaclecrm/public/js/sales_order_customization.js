@@ -91,6 +91,15 @@ frappe.ui.form.on("Sales Order", {
     if (frm.doc.naming_series && frm.doc.naming_series === "SO-G-.FY.-.#.") {
       frm.set_value("status", "To Bill");
     }
+    if (
+      frm.doc.custom_payment_mode == "Kotak" ||
+      frm.doc.custom_payment_mode == "ICICI" ||
+      frm.doc.custom_payment_mode == "Payment Gateway"
+    ) {
+      if (!frm.doc.custom_payment_reciept || !frm.doc.custom_reciept_number) {
+        frappe.throw("Please provide reciept number or reciept anyone.");
+      }
+    }
   },
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);

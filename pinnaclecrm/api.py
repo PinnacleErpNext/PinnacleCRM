@@ -61,7 +61,7 @@ def create_and_update_address(address, src, addr_name=None):
                 "links",
                 {
                     "link_doctype": quotation.quotation_to,
-                    "link_name": quotation.party_name,  # Use customer.name, not the object itself
+                    "link_name": quotation.party_name,
                 },
             )
 
@@ -78,6 +78,52 @@ def create_and_update_address(address, src, addr_name=None):
         # Handle any errors that occur
         frappe.log_error(f"Error in creating customer or address: {str(e)}")
         return {"message": f"Error: {str(e)}", "status": 500}
+
+
+@frappe.whitelist(allow_guest=True)
+def create_customer_address(gst_data, customer):
+    gst_data = json.loads(gst_data)
+    address = gst_data.get("pradr").get("addr")
+
+    new_address = frappe.get_doc(
+        {
+            "doctype": "Address",
+            "docstatus": 0,
+            "address_title": customer,
+            "address_type": "Billing",
+            "address_line1": address.get("bno"),
+            "address_line2": address.get("st"),
+            "city": address.get("dst"),
+            "state": address.get("stcd"),
+            "country": "India",
+            "pincode": address.get("pncd"),
+            "gstin": gst_data.get("gstin"),
+            "gst_category": "Registered Regular",
+            "is_primary_address": 1,
+            "is_your_company_address": 0,
+        }
+    )
+    print(new_address)
+    # Link the address to the customer
+    new_address.append(
+        "links",
+        {
+            "link_doctype": "Customer",
+            "link_name": customer,
+        },
+    )
+
+    # Insert the address
+    new_address.insert()
+    # Return success message
+
+    frappe.db.set_value(
+        "Customer", customer, "customer_primary_address", new_address.name
+    )
+    return {
+        "message": "Address created and linked successfully",
+        "status": 200,
+    }
 
 
 # API get address
@@ -138,6 +184,14 @@ def get_address(docname):
 
 @frappe.whitelist(allow_guest=True)
 def get_gstin_details(gst_in):
+
+    customer = frappe.db.exists("Customer", {"gstin": gst_in})
+    if customer:
+        return {
+            "status": 409,
+            "message": "Customer already exists.",
+            "customer": customer,
+        }
     url = f"https://gstapi.mygstcafe.com/managed/commonapi/v1.1/search?gstin={gst_in}"
     headers = {
         "CustomerId": "ASP10012",
@@ -148,3 +202,65 @@ def get_gstin_details(gst_in):
     response = requests.get(url, headers=headers)
     data = response.json()
     return data
+
+
+@frappe.whitelist(allow_guest=True)
+def create_customer(data):
+    if data is None:
+        return frappe.throw("No customer data found.")
+    customer_data = json.loads(data)
+    # Create a new Customer document
+    customer = frappe.get_doc(
+        {
+            "doctype": "Customer",
+            "customer_name": customer_data.get("cnm"),
+            "customer_group": customer_data.get("cgrp"),
+            "tax_category": customer_data.get("txcategory"),
+            "custom_customer_id": customer_data.get("custid"),
+            "gstin": customer_data.get("gstin"),
+        }
+    )
+
+    customer.insert(ignore_permissions=True)
+    frappe.db.commit()
+    new_address = frappe.get_doc(
+        {
+            "doctype": "Address",
+            "docstatus": 0,
+            "address_title": customer.name,
+            "address_type": "Billing",
+            "address_line1": customer_data.get("bno"),
+            "address_line2": customer_data.get("st"),
+            "city": customer_data.get("dst"),
+            "state": customer_data.get("stcd"),
+            "country": "India",
+            "pincode": customer_data.get("pncd"),
+            "gstin": customer_data.get("gstin"),
+            "gst_category": "Registered Regular",
+            "is_primary_address": 1,
+            "is_your_company_address": 0,
+        }
+    )
+    # Link the address to the customer
+    new_address.append(
+        "links",
+        {
+            "link_doctype": "Customer",
+            "link_name": customer.name,
+        },
+    )
+
+    # Insert the address
+    new_address.insert()
+    # Return success message
+
+    frappe.db.set_value(
+        "Customer", customer.name, "customer_primary_address", new_address.name
+    )
+
+    return {
+        "message": "Customer and Address created successfully",
+        "status": 200,
+        "customer": customer.name,
+        "address": new_address.name,
+    }

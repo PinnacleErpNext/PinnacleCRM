@@ -1,6 +1,7 @@
 var original_sales_order_onload =
   frappe.listview_settings["Sales Order"].onload;
 
+window.gstData = {};
 frappe.listview_settings["Sales Order"] = {
   add_fields: [
     "base_grand_total",
@@ -86,14 +87,40 @@ frappe.listview_settings["Sales Order"] = {
 };
 
 frappe.ui.form.on("Sales Order", {
+  validate: function (frm) {
+    if (frm.doc.naming_series && frm.doc.naming_series === "SO-G-.FY.-.#.") {
+      frm.set_value("status", "To Bill");
+    }
+  },
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
     pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
+    if (frm.doc.naming_series) {
+      if (
+        frm.doc.naming_series.includes("-A-") ||
+        frm.doc.naming_series.includes("-G-")
+      ) {
+        frm.set_value("custom_sales_type", "Fresh");
+        frm.set_df_property("custom_sales_type", "read_only", 1);
+      } else if (
+        frm.doc.naming_series.includes("-AR-") ||
+        frm.doc.naming_series.includes("-GR-")
+      ) {
+        frm.set_value("custom_sales_type", "Renewal");
+        frm.set_df_property("custom_sales_type", "read_only", 1);
+      } else {
+        frm.set_value("custom_sales_type", "");
+        frm.set_df_property("custom_sales_type", "read_only", 0);
+      }
+    }
   },
   refresh: function (frm) {
     if (frm.is_new()) {
       frm.set_value("naming_series", "");
       frm.set_value("delivery_date", "2080-01-01");
+      frm.add_custom_button("Create Customer", () => {
+        fetchGstInDetails(frm);
+      });
     }
     if (!frm.page.wrapper[0]) return;
 
@@ -213,3 +240,250 @@ frappe.ui.form.on("Sales Order", {
     }
   },
 });
+
+function fetchGstInDetails(frm) {
+  let gstDialog = new frappe.ui.Dialog({
+    title: "Enter GST Details",
+    fields: [
+      {
+        label: "GST IN",
+        fieldname: "gstin",
+        fieldtype: "Data",
+        reqd: 1,
+      },
+      {
+        label: "Fetch GST Details",
+        fieldname: "fetch_gst_details",
+        fieldtype: "Button",
+        click: function () {
+          renderGstDetails(gstDialog);
+        },
+      },
+      {
+        label: "Select Customer Name",
+        fieldname: "customer_name",
+        fieldtype: "Select",
+        options: [],
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        label: "Use This Name",
+        fieldname: "use_this_name",
+        fieldtype: "Button",
+        hidden: 1,
+        click: function () {
+          setCustomerName(gstDialog, frm);
+        },
+      },
+      {
+        fieldname: "address_details",
+        fieldtype: "Section Break",
+      },
+      {
+        label: "Customer ID",
+        fieldname: "cust_id",
+        fieldtype: "Data",
+        hidden: 1,
+      },
+      {
+        label: "Customer Group",
+        fieldname: "customer_group",
+        fieldtype: "Link",
+        options: "Customer Group",
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        label: "Tax Category",
+        fieldname: "tax_category",
+        fieldtype: "Link",
+        options: "Tax Category",
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        fieldname: "col_brk",
+        fieldtype: "Column Break",
+        hidden: 1,
+      },
+      {
+        label: "Address",
+        fieldname: "address_html",
+        fieldtype: "HTML",
+        options: "",
+      },
+    ],
+    primary_action_label: "Create Customer",
+    primary_action: function () {
+      let selected = gstDialog.get_value("customer_name");
+      let select_field = gstDialog.get_field("customer_name");
+      let cnm = "";
+      if (selected.includes("Trade Name")) {
+        cnm = select_field.tradeNam;
+      } else if (selected.includes("Legal Name")) {
+        cnm = select_field.lgnm;
+      }
+      data = {
+        gstin: gstDialog.get_value("gstin"),
+        cnm: cnm,
+        custid: gstDialog.get_value("cust_id"),
+        cgrp: gstDialog.get_value("customer_group"),
+        txcategory: gstDialog.get_value("tax_category"),
+        bno: window.gstData.pradr?.addr?.bno,
+        st: window.gstData.pradr?.addr?.st,
+        dst: window.gstData.pradr?.addr?.dst,
+        stcd: window.gstData.pradr?.addr?.stcd,
+        pncd: window.gstData.pradr?.addr?.pncd,
+      };
+      frappe.call({
+        method: "pinnaclecrm.api.create_customer",
+        args: { data: data },
+        callback: function (res) {
+          if (res.message.status === 200) {
+            console.log(res);
+            frm.set_value("customer", res.message.customer);
+          }
+        },
+        error: function () {
+          console.log(err);
+          frappe.msgprint("Failed to fetch GST details.");
+        },
+      });
+      gstDialog.hide();
+    },
+  });
+
+  gstDialog.show();
+}
+
+function renderGstDetails(gstDialog) {
+  let gstin = gstDialog.get_value("gstin");
+  if (gstin && gstin.length === 15) {
+    let fields = [
+      "customer_name",
+      "cust_id",
+      "customer_group",
+      "tax_category",
+      "col_brk",
+    ];
+
+    fields.forEach((field) => {
+      let f = gstDialog.get_field(field);
+      if (f) {
+        f.df.hidden = 0;
+        f.refresh();
+      }
+    });
+    gstDialog.fields_dict.address_html.$wrapper.html(`
+      <style>
+        .loader {
+          border: 8px solid #f3f3f3;
+          border-top: 8px solid #3498db;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 2s linear infinite;
+          margin: 20px auto;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+      <div class="loader"></div>
+    `);
+
+    frappe.call({
+      method: "pinnaclecrm.api.get_gstin_details",
+      args: { gst_in: gstin },
+      callback: function (res) {
+        if (res.message.status === 409) {
+          let fields = [
+            "customer_name",
+            "use_this_name",
+            "cust_id",
+            "customer_group",
+            "tax_category",
+            "col_brk",
+          ];
+
+          fields.forEach((field) => {
+            let f = gstDialog.get_field(field);
+            if (f) {
+              f.df.hidden = 1;
+              f.refresh();
+            }
+          });
+          gstDialog.fields_dict.address_html.$wrapper.html(``);
+          return frappe.msgprint({
+            message: `Customer: ${res.message.customer} with gstin:${gstin} already exists.Create customer mannually.`,
+            title: __("Warning"),
+            indicator: "orange",
+          });
+        }
+        if (res && res.message && res.message.data) {
+          window.gstData = res.message.data;
+          let gstData = res.message.data;
+          let tradeNam = gstData.tradeNam;
+          let lgnm = gstData.lgnm;
+          if (gstData.pradr.addr.stcd === "Uttar Pradesh") {
+            gstDialog.set_value("tax_category", "In-State");
+          } else {
+            gstDialog.set_value("tax_category", "Out-State");
+          }
+          gstDialog.fields_dict.address_html.$wrapper.html(`
+          <p><strong>GSTIN:</strong> ${gstData.gstin}</p>
+          <p><strong>Address Line 1:</strong> ${
+            gstData.pradr.addr.bno || ""
+          }</p>
+          <p><strong>Address Line 2:</strong> ${gstData.pradr.addr.st || ""}</p>
+          <p><strong>City:</strong> ${gstData.pradr.addr.dst || ""}</p>
+          <p><strong>State:</strong> ${gstData.pradr.addr.stcd || ""}</p>
+          <p><strong>Postal Code:</strong> ${gstData.pradr.addr.pncd || ""}</p>
+        `);
+
+          let select_field = gstDialog.get_field("customer_name");
+          select_field.df.options = [
+            `Trade Name: ${tradeNam}`,
+            `Legal Name: ${lgnm}`,
+          ];
+          select_field.df.hidden = 0;
+
+          // Store names for later use
+          select_field.tradeNam = tradeNam;
+          select_field.lgnm = lgnm;
+
+          gstDialog.refresh();
+        } else {
+          frappe.msgprint("Failed to fetch GST details.");
+        }
+      },
+      error: function () {
+        frappe.msgprint("Error fetching GST details.");
+      },
+    });
+  } else {
+    frappe.msgprint("Please enter a valid 15-character GSTIN.");
+  }
+}
+
+function setCustomerName(gstDialog, frm) {
+  let selected = gstDialog.get_value("customer_name");
+  let name = "";
+
+  let select_field = gstDialog.get_field("customer_name");
+  if (selected.includes("Trade Name")) {
+    name = select_field.tradeNam;
+  } else if (selected.includes("Legal Name")) {
+    name = select_field.lgnm;
+  }
+
+  if (name) {
+    frm.set_value("customer_name", name);
+    frappe.msgprint(`Customer name set to: ${name}`);
+    gstDialog.hide();
+  } else {
+    frappe.msgprint("Please select a valid name option.");
+  }
+}

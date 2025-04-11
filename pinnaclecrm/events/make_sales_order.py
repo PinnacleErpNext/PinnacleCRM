@@ -24,7 +24,7 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
     """Custom function to map Quotation → Sales Order."""
 
     # Create Customer from Quotation
-    customer = frappe.get_doc("Customer","Dummy Customer")
+    customer = {}
     
     # Get Ordered Items to prevent duplication
     ordered_items = frappe._dict(

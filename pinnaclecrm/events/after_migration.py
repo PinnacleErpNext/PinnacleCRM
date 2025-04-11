@@ -6,7 +6,7 @@ from pinnaclecrm.events.dummy_customer import create_dummy_customer
 @frappe.whitelist(allow_guest=True)
 def after_migrate():
     
-    create_dummy_customer()
+    # create_dummy_customer()
     
     parent_doctype = "Lead"
 

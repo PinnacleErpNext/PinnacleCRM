@@ -1,147 +1,266 @@
+window.gstData = {};
+
 frappe.ui.form.on("Customer", {
   refresh: function (frm) {
     if (frm.is_new()) {
       // Add a custom button to the form
-      frm.add_custom_button("Get Customer Name", () => {
-        // Initialize the dialog with all necessary fields
-        let gst_dialog = new frappe.ui.Dialog({
-          title: "Enter GST Details",
-          fields: [
-            {
-              label: "GST IN",
-              fieldname: "gstin",
-              fieldtype: "Data",
-              reqd: 1,
-              onchange: function () {
-                // Show the fetch button only when GSTIN is exactly 15 characters
-                let fetch_btn = gst_dialog.get_field("fetch_customer_name");
-                if (this.value && this.value.length === 15) {
-                  fetch_btn.df.hidden = 0;
-                } else {
-                  fetch_btn.df.hidden = 1;
-                }
-                gst_dialog.refresh();
-              },
-            },
-            {
-              label: "Fetch Customer Name",
-              fieldname: "fetch_customer_name",
-              fieldtype: "Button",
-              hidden: 1,
-              click: function () {
-                let gstin = gst_dialog.get_value("gstin");
-                if (gstin && gstin.length === 15) {
-                  frappe.call({
-                    method: "pinnaclecrm.api.get_gstin_details",
-                    args: { gst_in: gstin },
-                    callback: function (res) {
-                      if (res && res.message && res.message.data) {
-                        let tradeNam = res.message.data.tradeNam;
-                        let lgnm = res.message.data.lgnm;
-
-                        let select_field = gst_dialog.get_field(
-                          "customer_name_option"
-                        );
-                        select_field.df.options = [
-                          `Trade Name: ${tradeNam}`,
-                          `Legal Name: ${lgnm}`,
-                        ];
-                        select_field.df.hidden = 0;
-
-                        let use_btn = gst_dialog.get_field("use_this_name");
-                        use_btn.df.hidden = 0;
-
-                        // Store mapping for later use
-                        select_field.tradeNam = tradeNam;
-                        select_field.lgnm = lgnm;
-
-                        gst_dialog.refresh();
-                      } else {
-                        frappe.msgprint("Failed to fetch GST details.");
-                      }
-                    },
-                    error: function () {
-                      frappe.msgprint("Error fetching GST details.");
-                    },
-                  });
-                } else {
-                  frappe.msgprint("Please enter a valid 15-character GSTIN.");
-                }
-              },
-            },
-            {
-              label: "Customer Name Option",
-              fieldname: "customer_name_option",
-              fieldtype: "Select",
-              options: [],
-              hidden: 1,
-            },
-            {
-              label: "Use This Name",
-              fieldname: "use_this_name",
-              fieldtype: "Button",
-              hidden: 1,
-              click: function () {
-                let selected = gst_dialog.get_value("customer_name_option");
-                let name = "";
-
-                let select_field = gst_dialog.get_field("customer_name_option");
-                if (selected.includes("Trade Name")) {
-                  name = select_field.tradeNam;
-                } else if (selected.includes("Legal Name")) {
-                  name = select_field.lgnm;
-                }
-
-                if (name) {
-                  cur_frm.set_value("customer_name", name);
-                  frappe.msgprint(`Customer name set to: ${name}`);
-                  gst_dialog.hide();
-                } else {
-                  frappe.msgprint("Please select a valid name option.");
-                }
-              },
-            },
-          ],
-          primary_action_label: "Close",
-          primary_action: function () {
-            gst_dialog.hide();
-          },
-        });
-
-        // Display the dialog
-        gst_dialog.show();
+      frm.add_custom_button("Fetch GST IN Details", () => {
+        fetchGstInDetails(frm);
       });
     }
   },
   customer_name: function (frm) {
-    customerName = frm.doc.customer_name;
-    frm.set_value("customer_name", customerName.toUpperCase());
-  },
-
-  gstin: function (frm) {
-    let gstin = frm.doc.gstin;
-    if (gstin.length !== 15) {
-      console.error("Invalid GSTIN length");
-      return Promise.resolve(null);
+    let customerName = frm.doc.customer_name;
+    if (customerName) {
+      frm.set_value("customer_name", customerName.toUpperCase());
     }
-
-    return new Promise((resolve, reject) => {
+  },
+  after_save: function (frm) {
+    if (window.gstData && !frm.doc.customer_primary_address) {
       frappe.call({
-        method: "pinnaclecrm.api.get_gstin_details",
-        args: { gst_in: gstin },
+        method: "pinnaclecrm.api.create_customer_address",
+        args: {
+          gst_data: window.gstData,
+          customer: frm.doc.name,
+        },
         callback: (res) => {
-          if (res.message && res.message.status_cd === "1") {
-            let customerName = res.message.data.lgnm;
-            frm
-              .set_value("customer_name", customerName)
-              .then(() => resolve(customerName))
-              .catch(reject);
-          } else {
-            reject(new Error("Invalid GSTIN details received"));
+          if (res.message.status === 200) {
+            frm.reload_doc();
           }
         },
-        error: (err) => reject(err),
+        error: (res) => {
+          frappe.msgprint("Error creating customer address.");
+        },
       });
-    });
+    }
   },
 });
+
+function fetchGstInDetails(frm) {
+  let gstDialog = new frappe.ui.Dialog({
+    title: "Enter GST Details",
+    fields: [
+      {
+        label: "GST IN",
+        fieldname: "gstin",
+        fieldtype: "Data",
+        reqd: 1,
+      },
+      {
+        label: "Fetch GST Details",
+        fieldname: "fetch_gst_details",
+        fieldtype: "Button",
+        click: function () {
+          renderGstDetails(gstDialog);
+        },
+      },
+      {
+        label: "Select Customer Name",
+        fieldname: "customer_name",
+        fieldtype: "Select",
+        options: [],
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        label: "Use This Name",
+        fieldname: "use_this_name",
+        fieldtype: "Button",
+        hidden: 1,
+        click: function () {
+          setCustomerName(gstDialog, frm);
+        },
+      },
+      {
+        fieldname: "address_details",
+        fieldtype: "Section Break",
+      },
+      {
+        label: "Customer ID",
+        fieldname: "cust_id",
+        fieldtype: "Data",
+        hidden: 1,
+      },
+      {
+        label: "Customer Group",
+        fieldname: "customer_group",
+        fieldtype: "Link",
+        options: "Customer Group",
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        label: "Tax Category",
+        fieldname: "tax_category",
+        fieldtype: "Link",
+        options: "Tax Category",
+        hidden: 1,
+        reqd: 1,
+      },
+      {
+        fieldname: "col_brk",
+        fieldtype: "Column Break",
+        hidden: 1,
+      },
+      {
+        label: "Address",
+        fieldname: "address_html",
+        fieldtype: "HTML",
+        options: "",
+      },
+    ],
+    primary_action_label: "Create Customer",
+    primary_action: function () {
+      let selected = gstDialog.get_value("customer_name");
+      let select_field = gstDialog.get_field("customer_name");
+      let cnm = "";
+      if (selected.includes("Trade Name")) {
+        cnm = select_field.tradeNam;
+      } else if (selected.includes("Legal Name")) {
+        cnm = select_field.lgnm;
+      }
+      console.log(gstDialog.get_value("gstin"));
+      frm.set_value("customer_name", cnm);
+      frm.set_value("custom_customer_id", gstDialog.get_value("cust_id"));
+      frm.set_value("customer_group", gstDialog.get_value("customer_group"));
+      frm.set_value("tax_category", gstDialog.get_value("tax_category"));
+      frm.set_value("gstin", gstDialog.get_value("gstin"));
+      frm.save();
+      gstDialog.hide();
+    },
+  });
+
+  gstDialog.show();
+}
+
+function renderGstDetails(gstDialog) {
+  let gstin = gstDialog.get_value("gstin");
+  if (gstin && gstin.length === 15) {
+    let fields = [
+      "customer_name",
+      "use_this_name",
+      "cust_id",
+      "customer_group",
+      "tax_category",
+      "col_brk",
+    ];
+
+    fields.forEach((field) => {
+      let f = gstDialog.get_field(field);
+      if (f) {
+        f.df.hidden = 0;
+        f.refresh();
+      }
+    });
+    gstDialog.fields_dict.address_html.$wrapper.html(`
+      <style>
+        .loader {
+          border: 8px solid #f3f3f3;
+          border-top: 8px solid #3498db;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 2s linear infinite;
+          margin: 20px auto;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+      <div class="loader"></div>
+    `);
+
+    frappe.call({
+      method: "pinnaclecrm.api.get_gstin_details",
+      args: { gst_in: gstin },
+      callback: function (res) {
+        if (res.message.status === 409) {
+          let fields = [
+            "customer_name",
+            "use_this_name",
+            "cust_id",
+            "customer_group",
+            "tax_category",
+            "col_brk",
+          ];
+
+          fields.forEach((field) => {
+            let f = gstDialog.get_field(field);
+            if (f) {
+              f.df.hidden = 1;
+              f.refresh();
+            }
+          });
+          gstDialog.fields_dict.address_html.$wrapper.html(``);
+          return frappe.msgprint({
+            message: `Customer: ${res.message.customer} with gstin:${gstin} already exists.Create customer mannually.`,
+            title: __("Warning"),
+            indicator: "orange",
+          });
+        }
+        if (res && res.message && res.message.data) {
+          window.gstData = res.message.data;
+          let gstData = res.message.data;
+          let tradeNam = gstData.tradeNam;
+          let lgnm = gstData.lgnm;
+          if (gstData.pradr.addr.stcd === "Uttar Pradesh") {
+            gstDialog.set_value("tax_category", "In-State");
+          } else {
+            gstDialog.set_value("tax_category", "Out-State");
+          }
+          gstDialog.fields_dict.address_html.$wrapper.html(`
+          <p><strong>GSTIN:</strong> ${gstData.gstin}</p>
+          <p><strong>Address Line 1:</strong> ${
+            gstData.pradr.addr.bno || ""
+          }</p>
+          <p><strong>Address Line 2:</strong> ${gstData.pradr.addr.st || ""}</p>
+          <p><strong>City:</strong> ${gstData.pradr.addr.dst || ""}</p>
+          <p><strong>State:</strong> ${gstData.pradr.addr.stcd || ""}</p>
+          <p><strong>Postal Code:</strong> ${gstData.pradr.addr.pncd || ""}</p>
+        `);
+
+          let select_field = gstDialog.get_field("customer_name");
+          select_field.df.options = [
+            `Trade Name: ${tradeNam}`,
+            `Legal Name: ${lgnm}`,
+          ];
+          select_field.df.hidden = 0;
+
+          // Store names for later use
+          select_field.tradeNam = tradeNam;
+          select_field.lgnm = lgnm;
+
+          gstDialog.refresh();
+        } else {
+          frappe.msgprint("Failed to fetch GST details.");
+        }
+      },
+      error: function () {
+        frappe.msgprint("Error fetching GST details.");
+      },
+    });
+  } else {
+    frappe.msgprint("Please enter a valid 15-character GSTIN.");
+  }
+}
+
+function setCustomerName(gstDialog, frm) {
+  let selected = gstDialog.get_value("customer_name");
+  let name = "";
+
+  let select_field = gstDialog.get_field("customer_name");
+  if (selected.includes("Trade Name")) {
+    name = select_field.tradeNam;
+  } else if (selected.includes("Legal Name")) {
+    name = select_field.lgnm;
+  }
+
+  if (name) {
+    frm.set_value("customer_name", name);
+    frappe.msgprint(`Customer name set to: ${name}`);
+    gstDialog.hide();
+  } else {
+    frappe.msgprint("Please select a valid name option.");
+  }
+}

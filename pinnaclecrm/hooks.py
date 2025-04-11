@@ -30,9 +30,7 @@ before_migrate = "pinnaclecrm.events.after_migration.after_migrate"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/pinnaclecrm/css/pinnaclecrm.css"
-app_include_js = [
-    "/assets/pinnaclecrm/js/naming_series.js"
-    ]
+app_include_js = ["/assets/pinnaclecrm/js/naming_series.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/pinnaclecrm/css/pinnaclecrm.css"
@@ -154,19 +152,7 @@ doctype_list_js = {
 # ---------------
 # Hook on document methods and events
 
-doc_events = {
-    # "*": {
-    # 	"on_update": "method",
-    # 	"on_cancel": "method",
-    # 	"on_trash": "method"
-    # }
-    "Customer": {
-        "on_trash": "pinnaclecrm.events.dummy_customer.prevent_dummy_customer_deletion"
-    },
-    "Sales Order": {
-        "before_save": "pinnaclecrm.events.so_before_save.custom_before_save"
-    },
-}
+# doc_events = {"*": {"on_update": "method", "on_cancel": "method", "on_trash": "method"}}
 
 # Scheduled Tasks
 # ---------------

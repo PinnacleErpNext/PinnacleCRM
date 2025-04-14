@@ -8,6 +8,7 @@ app_license = "mit"
 
 before_migrate = "pinnaclecrm.events.after_migration.after_migrate"
 
+import pinnaclecrm.pinnacle_crm.doctype.customer_id.set_cust_id
 
 # Apps
 # ------------------

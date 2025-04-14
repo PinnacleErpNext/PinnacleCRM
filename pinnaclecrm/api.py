@@ -5,7 +5,6 @@ import json
 from erpnext.selling.doctype.quotation.quotation import _make_customer
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 
-
 @frappe.whitelist(allow_guest=True)
 def create_and_update_address(address, src, addr_name=None):
     address = json.loads(address)
@@ -82,6 +81,9 @@ def create_and_update_address(address, src, addr_name=None):
 
 @frappe.whitelist(allow_guest=True)
 def create_customer_address(gst_data, customer):
+    
+    if gst_data == {}:
+        return
     gst_data = json.loads(gst_data)
     address = gst_data.get("pradr").get("addr")
 
@@ -124,7 +126,6 @@ def create_customer_address(gst_data, customer):
         "message": "Address created and linked successfully",
         "status": 200,
     }
-
 
 # API get address
 @frappe.whitelist(allow_guest=True)
@@ -181,7 +182,6 @@ def get_address(docname):
     # Return results as JSON
     return address
 
-
 @frappe.whitelist(allow_guest=True)
 def get_gstin_details(gst_in):
 
@@ -202,7 +202,6 @@ def get_gstin_details(gst_in):
     response = requests.get(url, headers=headers)
     data = response.json()
     return data
-
 
 @frappe.whitelist(allow_guest=True)
 def create_customer(data):

@@ -4,8 +4,34 @@ frappe.ui.form.on("Customer", {
   refresh: function (frm) {
     if (frm.is_new()) {
       // Add a custom button to the form
-      frm.add_custom_button("Fetch GST IN Details", () => {
+      frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);
+      });
+    }
+    if (
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
+      frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
+    ) {
+      frm.set_query("custom_customer_id", () => {
+        return {
+          filters: {
+            customer_type: "UN-Registered",
+          },
+        };
+      });
+    } else {
+      frm.set_query("custom_customer_id", () => {
+        return {
+          filters: {
+            customer_type: "Registered",
+            customer: frm.doc.name,
+          },
+        };
       });
     }
   },
@@ -16,7 +42,10 @@ frappe.ui.form.on("Customer", {
     }
   },
   after_save: function (frm) {
-    if (window.gstData && !frm.doc.customer_primary_address) {
+    if (
+      Object.keys(window.gstData).length > 0 &&
+      !frm.doc.customer_primary_address
+    ) {
       frappe.call({
         method: "pinnaclecrm.api.create_customer_address",
         args: {

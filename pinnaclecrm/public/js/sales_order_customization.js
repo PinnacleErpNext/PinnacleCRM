@@ -96,7 +96,7 @@ frappe.ui.form.on("Sales Order", {
       frm.doc.custom_payment_mode == "ICICI" ||
       frm.doc.custom_payment_mode == "Payment Gateway"
     ) {
-      if (!frm.doc.custom_payment_reciept || !frm.doc.custom_reciept_number) {
+      if (!frm.doc.custom_payment_reciept && !frm.doc.custom_reciept_number) {
         frappe.throw("Please provide reciept number or reciept anyone.");
       }
     }
@@ -124,6 +124,33 @@ frappe.ui.form.on("Sales Order", {
     }
   },
   refresh: function (frm) {
+    if (
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
+      frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
+    ) {
+      frm.set_query("custom_customer_id", () => {
+        return {
+          filters: {
+            customer_type: "UN-Registered",
+            customer_name: frm.doc.custom_unregistered_customer_name,
+          },
+        };
+      });
+    } else {
+      frm.set_query("custom_customer_id", () => {
+        return {
+          filters: {
+            customer_type: "Registered",
+            customer: frm.doc.customer,
+          },
+        };
+      });
+    }
     if (frm.is_new()) {
       frm.set_value("naming_series", "");
       frm.set_value("delivery_date", "2080-01-01");
@@ -247,6 +274,12 @@ frappe.ui.form.on("Sales Order", {
     } else {
       console.log("Document is not new or prevdoc_docname is not available.");
     }
+  },
+  customer: function (frm) {
+    setCustomerId(frm);
+  },
+  custom_unregistered_customer_name: function (frm) {
+    setCustomerId(frm);
   },
 });
 
@@ -494,5 +527,63 @@ function setCustomerName(gstDialog, frm) {
     gstDialog.hide();
   } else {
     frappe.msgprint("Please select a valid name option.");
+  }
+}
+
+function setCustomerId(frm) {
+  if (
+    (frm.doc.customer_name ===
+      "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
+      frm.doc.customer_name ===
+        "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]") &&
+    frm.doc.custom_unregistered_customer_name
+  ) {
+    frappe.db
+      .get_list("Customer ID", {
+        fields: ["customer_id"],
+        filters: {
+          customer_type: "UN-Registered",
+          customer_name: frm.doc.custom_unregistered_customer_name || "",
+        },
+        limit: 1,
+      })
+      .then((cust_id) => {
+        if (cust_id.length > 0) {
+          frm.set_value("custom_customer_id", cust_id[0].customer_id);
+          console.log(cust_id[0].customer_id);
+        } else {
+          frappe.msgprint("No matching Customer ID found.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        frappe.msgprint("Error while fetching Customer ID.");
+      });
+  } else {
+    frappe.db
+      .get_list("Customer ID", {
+        fields: ["customer_id"],
+        filters: {
+          customer_type: "Registered",
+          customer: frm.doc.customer || "",
+        },
+        limit: 1,
+      })
+      .then((cust_id) => {
+        if (cust_id.length > 0) {
+          frm.set_value("custom_customer_id", cust_id[0].customer_id);
+          console.log(cust_id[0].customer_id);
+        } else {
+          frappe.msgprint("No matching Customer ID found.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        frappe.msgprint("Error while fetching Customer ID.");
+      });
   }
 }

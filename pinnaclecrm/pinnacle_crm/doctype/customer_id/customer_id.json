@@ -38,14 +38,16 @@
    "options": "Customer"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "customer_name",
    "fieldtype": "Data",
-   "label": "Customer Name"
+   "label": "Customer Name",
+   "mandatory_depends_on": "eval: doc.customer_type === \"UN-Registered\""
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-13 12:24:58.802476",
+ "modified": "2025-04-14 13:38:31.739072",
  "modified_by": "Administrator",
  "module": "Pinnacle CRM",
  "name": "Customer ID",

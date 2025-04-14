@@ -154,7 +154,7 @@ frappe.ui.form.on("Sales Order", {
     if (frm.is_new()) {
       frm.set_value("naming_series", "");
       frm.set_value("delivery_date", "2080-01-01");
-      frm.add_custom_button("Create Customer", () => {
+      frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);
       });
     }

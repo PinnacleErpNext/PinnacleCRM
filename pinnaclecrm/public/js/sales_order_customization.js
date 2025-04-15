@@ -85,7 +85,7 @@ frappe.listview_settings["Sales Order"] = {
     }
   },
 };
-window.series = "";
+window.selectedSeries = "";
 
 frappe.ui.form.on("Sales Order", {
   validate: function (frm) {
@@ -103,7 +103,7 @@ frappe.ui.form.on("Sales Order", {
     }
   },
   naming_series: function (frm) {
-    window.series = frm.doc.naming_series;
+    window.selectedSeries = frm.doc.naming_series;
     pinnaclecrm.utils.applyItemGroupFilter(frm);
     pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
     if (frm.doc.naming_series) {

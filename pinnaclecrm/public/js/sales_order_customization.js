@@ -85,6 +85,7 @@ frappe.listview_settings["Sales Order"] = {
     }
   },
 };
+window.series = "";
 
 frappe.ui.form.on("Sales Order", {
   validate: function (frm) {
@@ -102,6 +103,7 @@ frappe.ui.form.on("Sales Order", {
     }
   },
   naming_series: function (frm) {
+    window.series = frm.doc.naming_series;
     pinnaclecrm.utils.applyItemGroupFilter(frm);
     pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
     if (frm.doc.naming_series) {
@@ -152,7 +154,7 @@ frappe.ui.form.on("Sales Order", {
       });
     }
     if (frm.is_new()) {
-      frm.set_value("naming_series", "");
+      frm.set_value("naming_series", window.series);
       frm.set_value("delivery_date", "2080-01-01");
       frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);

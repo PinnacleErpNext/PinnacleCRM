@@ -7,6 +7,7 @@ frappe.ui.form.on("Customer", {
       frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);
       });
+      frm.set_value("gst_category", "");
     }
     if (
       frm.doc.customer_name ===

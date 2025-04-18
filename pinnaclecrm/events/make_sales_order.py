@@ -24,7 +24,7 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
     """Custom function to map Quotation → Sales Order."""
 
     # Create Customer from Quotation
-    customer = {}
+    customer = _make_customer(source_name, ignore_permissions)
     
     # Get Ordered Items to prevent duplication
     ordered_items = frappe._dict(
@@ -116,3 +116,26 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
     )
 
     return doclist
+
+def _make_customer(source_name, ignore_permissions=False):
+	quotation = frappe.db.get_value(
+		"Quotation",
+		source_name,
+		["order_type", "quotation_to", "party_name", "customer_name"],
+		as_dict=1,
+	)
+
+	if quotation.quotation_to == "Customer":
+		return frappe.get_doc("Customer", quotation.party_name)
+
+	# Check if a Customer already exists for the Lead or Prospect.
+	existing_customer = None
+	if quotation.quotation_to == "Lead":
+		existing_customer = frappe.db.get_value("Customer", {"lead_name": quotation.party_name})
+	elif quotation.quotation_to == "Prospect":
+		existing_customer = frappe.db.get_value("Customer", {"prospect_name": quotation.party_name})
+
+	if existing_customer:
+		return frappe.get_doc("Customer", existing_customer)
+
+	return None

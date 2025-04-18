@@ -1,6 +1,9 @@
+window.selectedSeries = "";
+
 frappe.ui.form.on("Sales Invoice", {
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
+    window.selectedSeries = frm.doc.naming_series;
   },
   refresh: function (frm) {
     if (
@@ -31,7 +34,7 @@ frappe.ui.form.on("Sales Invoice", {
       });
     }
     if (frm.is_new()) {
-      frm.set_value("naming_series", "");
+      frm.set_value("naming_series", window.selectedSeries);
     }
     if (!frm.page.wrapper[0]) return; // Ensure the wrapper exists
 
@@ -161,7 +164,10 @@ frappe.ui.form.on("Sales Invoice", {
   customer: function (frm) {
     if (
       frm.doc.customer !== "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" &&
-      frm.doc.customer !== "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]"
+      frm.doc.customer !== "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" &&
+      frm.doc.customer_name !==
+        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" &&
+      frm.doc.customer_name !== "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
     ) {
       setCustomerId(frm);
     }
@@ -196,9 +202,10 @@ function setCustomerId(frm) {
         if (cust_id.length > 0) {
           frm.set_value("custom_customer_id", cust_id[0].customer_id);
           console.log(cust_id[0].customer_id);
-        } else {
-          frappe.msgprint("No matching Customer ID found.");
         }
+        // else {
+        //   frappe.msgprint("No matching Customer ID found.");
+        // }
       })
       .catch((err) => {
         console.error(err);
@@ -218,9 +225,10 @@ function setCustomerId(frm) {
         if (cust_id.length > 0) {
           frm.set_value("custom_customer_id", cust_id[0].customer_id);
           console.log(cust_id[0].customer_id);
-        } else {
-          frappe.msgprint("No matching Customer ID found.");
         }
+        // else {
+        //   frappe.msgprint("No matching Customer ID found.");
+        // }
       })
       .catch((err) => {
         console.error(err);

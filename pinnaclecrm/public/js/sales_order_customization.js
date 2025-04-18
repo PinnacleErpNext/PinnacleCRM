@@ -95,7 +95,8 @@ frappe.ui.form.on("Sales Order", {
     if (
       frm.doc.custom_payment_mode == "Kotak" ||
       frm.doc.custom_payment_mode == "ICICI" ||
-      frm.doc.custom_payment_mode == "Payment Gateway"
+      frm.doc.custom_payment_mode == "Payment Gateway" ||
+      frm.doc.custom_payment_mode == "Cash"
     ) {
       if (!frm.doc.custom_payment_reciept && !frm.doc.custom_reciept_number) {
         frappe.throw("Please provide reciept number or reciept anyone.");
@@ -103,6 +104,7 @@ frappe.ui.form.on("Sales Order", {
     }
   },
   naming_series: function (frm) {
+    setCustomerId(frm);
     window.selectedSeries = frm.doc.naming_series;
     pinnaclecrm.utils.applyItemGroupFilter(frm);
     pinnaclecrm.utils.applyCustomerGroupFilter(frm, "customer");
@@ -154,7 +156,7 @@ frappe.ui.form.on("Sales Order", {
       });
     }
     if (frm.is_new()) {
-      frm.set_value("naming_series", window.series);
+      frm.set_value("naming_series", window.selectedSeries);
       frm.set_value("delivery_date", "2080-01-01");
       frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);
@@ -579,9 +581,10 @@ function setCustomerId(frm) {
         if (cust_id.length > 0) {
           frm.set_value("custom_customer_id", cust_id[0].customer_id);
           console.log(cust_id[0].customer_id);
-        } else {
-          frappe.msgprint("No matching Customer ID found.");
         }
+        // else {
+        //   frappe.msgprint("No matching Customer ID found.");
+        // }
       })
       .catch((err) => {
         console.error(err);

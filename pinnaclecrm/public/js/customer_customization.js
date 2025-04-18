@@ -2,12 +2,15 @@ window.gstData = {};
 
 frappe.ui.form.on("Customer", {
   refresh: function (frm) {
+    if (frm.doc.customer_primary_address) {
+      frm.refresh_field("customer_primary_address");
+    }
     if (frm.is_new()) {
       // Add a custom button to the form
       frm.add_custom_button("Create Customer from GSTIN", () => {
         fetchGstInDetails(frm);
       });
-      frm.set_value("gst_category", "");
+      // frm.set_value("gst_category", "");
     }
     if (
       frm.doc.customer_name ===
@@ -120,6 +123,25 @@ function fetchGstInDetails(frm) {
         reqd: 1,
       },
       {
+        label: "GST Category",
+        fieldname: "gst_category",
+        fieldtype: "Select",
+        options: [
+          "Registered Regular",
+          "Registered Composition",
+          "Unregistered",
+          "SEZ",
+          "Overseas",
+          "Deemed Export",
+          "UIN Holders",
+          "Tax Deductor",
+          "Tax Collector",
+          "Input Service Distributor",
+        ],
+        hidden: 1,
+        reqd: 1,
+      },
+      {
         label: "Tax Category",
         fieldname: "tax_category",
         fieldtype: "Link",
@@ -154,9 +176,11 @@ function fetchGstInDetails(frm) {
       frm.set_value("custom_customer_id", gstDialog.get_value("cust_id"));
       frm.set_value("customer_group", gstDialog.get_value("customer_group"));
       frm.set_value("tax_category", gstDialog.get_value("tax_category"));
+      frm.set_value("gst_category", gstDialog.get_value("gst_category"));
       frm.set_value("gstin", gstDialog.get_value("gstin"));
       frm.save();
       gstDialog.hide();
+      frm.refresh_field("customer_primary_address");
     },
   });
 
@@ -172,6 +196,7 @@ function renderGstDetails(gstDialog) {
       "cust_id",
       "customer_group",
       "tax_category",
+      "gst_category",
       "col_brk",
     ];
 
@@ -212,6 +237,7 @@ function renderGstDetails(gstDialog) {
             "cust_id",
             "customer_group",
             "tax_category",
+            "gst_category",
             "col_brk",
           ];
 

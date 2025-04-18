@@ -1,8 +1,11 @@
 frappe.ui.form.on("Address", {
   refresh: function (frm) {
-    frm.add_custom_button("Get GST IN Details", () => {
-      fetchGstinDetails(frm);
-    });
+    if (frm.is_new()) {
+      frm.add_custom_button("Get GST IN Details", () => {
+        fetchGstinDetails(frm);
+      });
+      frm.set_value("gst_category", "");
+    }
   },
   address_line1: function (frm) {
     frm.set_value("address_line1", frm.doc.address_line1.toUpperCase());

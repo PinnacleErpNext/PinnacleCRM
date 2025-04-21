@@ -387,8 +387,9 @@ function fetchGstInDetails(frm) {
         args: { data: data },
         callback: function (res) {
           if (res.message.status === 200) {
-            console.log(res);
+            // console.log(res);
             frm.set_value("customer", res.message.customer);
+            markLeadConverted(frm);
           }
         },
         error: function () {
@@ -591,4 +592,13 @@ function setCustomerId(frm) {
         frappe.msgprint("Error while fetching Customer ID.");
       });
   }
+}
+
+function markLeadConverted(frm) {
+  frappe.call({
+    method: "pinnaclecrm.api.mark_lead_converted",
+    args: {
+      doc: frm.doc,
+    },
+  });
 }

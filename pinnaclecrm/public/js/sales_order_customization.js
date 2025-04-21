@@ -596,7 +596,7 @@ function setCustomerId(frm) {
 
 function markLeadConverted(frm) {
   frappe.call({
-    method: "pinnaclecrm.api.mark_lead_converted",
+    method: "pinnaclecrm.events.lead_conversion.mark_lead_converted",
     args: {
       doc: frm.doc,
     },

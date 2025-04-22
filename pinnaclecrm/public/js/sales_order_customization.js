@@ -285,6 +285,9 @@ frappe.ui.form.on("Sales Order", {
   custom_unregistered_customer_name: function (frm) {
     setCustomerId(frm);
   },
+  onload: function (frm) {
+    setCustomerId(frm);
+  },
 });
 
 function fetchGstInDetails(frm) {
@@ -536,6 +539,9 @@ function setCustomerName(gstDialog, frm) {
 }
 
 function setCustomerId(frm) {
+  if (frm.doc.custom_customer_name) {
+    return;
+  }
   if (
     (frm.doc.customer_name ===
       "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||

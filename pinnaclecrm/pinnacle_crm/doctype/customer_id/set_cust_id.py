@@ -23,7 +23,12 @@ class CustomSalesOrder(SalesOrder):
                 },
                 ["customer_id"],
             )
-
+        cust_id = frappe.db.get_value(
+            "Customer ID",
+            {"customer_type": "Registered", "customer": customer},
+            ["customer_id"],
+        )
+        print(cust_id)
         return frappe.db.get_value(
             "Customer ID",
             {"customer_type": "Registered", "customer": customer},

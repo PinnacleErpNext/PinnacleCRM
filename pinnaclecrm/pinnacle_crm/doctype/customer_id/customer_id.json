@@ -25,16 +25,16 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Customer Type",
-   "options": "\nRegistered\nUN-Registered",
+   "options": "\nB2B\nB2C",
    "reqd": 1
   },
   {
    "allow_in_quick_entry": 1,
-   "depends_on": "eval:(doc.customer_type === \"Registered\")",
+   "depends_on": "eval:(doc.customer_type === \"B2B\")",
    "fieldname": "customer",
    "fieldtype": "Link",
    "label": "Customer",
-   "mandatory_depends_on": "eval:(doc.customer_type === \"Registered\")",
+   "mandatory_depends_on": "eval:(doc.customer_type === \"B2B\")",
    "options": "Customer"
   },
   {
@@ -42,12 +42,12 @@
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "label": "Customer Name",
-   "mandatory_depends_on": "eval: doc.customer_type === \"UN-Registered\""
+   "mandatory_depends_on": "eval: doc.customer_type === \"B2C\""
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-18 15:20:32.828793",
+ "modified": "2025-04-22 12:03:41.954796",
  "modified_by": "Administrator",
  "module": "Pinnacle CRM",
  "name": "Customer ID",

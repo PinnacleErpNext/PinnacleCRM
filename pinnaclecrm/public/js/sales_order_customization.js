@@ -287,7 +287,11 @@ frappe.ui.form.on("Sales Order", {
   },
   onload: function (frm) {
     setCustomerId(frm);
+    if (frm.doc.workflow_state === "Cancelled" && frm.doc.docstatus == 1) {
+      frm.save("Cancel");
+    }
   },
+  on_submit: function (frm) {},
 });
 
 function fetchGstInDetails(frm) {

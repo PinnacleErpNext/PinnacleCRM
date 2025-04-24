@@ -153,7 +153,20 @@ doctype_list_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {"*": {"on_update": "method", "on_cancel": "method", "on_trash": "method"}}
+doc_events = {
+    # "*": {
+    #     "on_update": "method",
+    #     "on_cancel": "method",
+    #     "on_trash": "method"
+    #     }
+    "Sales Order": {
+        "on_submit": "pinnaclecrm.events.workflow_implementation.update_sales_order_status",
+        "before_submit": "pinnaclecrm.events.workflow_implementation.skip_delivery_note",
+    },
+    # "Delivery Note": {
+    #     "on_submit": "pinnaclecrm.events.workflow_implementation.mark_sales_order_completed",
+    # },
+}
 
 # Scheduled Tasks
 # ---------------

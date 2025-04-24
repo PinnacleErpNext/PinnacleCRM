@@ -9,58 +9,31 @@ def skip_delivery_note(self, method):
 
 
 def update_sales_order_status(self, method):
-    if self.naming_series in ["SO-G-.FY.-.#.", "SO-GR-.FY.-.#."]:
+    if (
+        self.naming_series in ["SO-G-.FY.-.#.", "SO-GR-.FY.-.#.", "SO-D-.FY.-.#."]
+        and self.custom_payment_mode == "Free"
+    ):
+        frappe.db.set_value(
+            "Sales Order",
+            self.name,
+            {"per_billed": 100, "status": "Completed"},
+        )
+        frappe.db.commit()
 
-        if self.custom_payment_mode == "Free":
-            # Make the Sales Invoice from the Sales Order
-            invoice = make_sales_invoice(self.name)
 
-            # Set any additional fields if needed
-            invoice.flags.ignore_permissions = (
-                True  # Optional, if user doesn't have Invoice permission
+def mark_so_completed(self, method):
+
+    if self.items[0].against_sales_order:
+        sales_order = frappe.get_doc("Sales Order", self.items[0].against_sales_order)
+        if sales_order.custom_payment_mode == "Free":
+            frappe.db.set_value(
+                "Sales Order",
+                sales_order.name,
+                {"per_billed": 100, "status": "Completed"},
             )
-            invoice.set_missing_values()
-            invoice.insert()
-
-            # Submit the Sales Invoice
-            invoice.submit()
-
-            frappe.msgprint(
-                f"Sales Invoice {invoice.name} created and submitted for Free order."
+            frappe.db.set_value(
+                "Delivery Note",
+                self.name,
+                {"per_billed": 100, "status": "Completed"},
             )
-    elif self.naming_series in ["SO-D-.FY.-.#."]:
-        if self.custom_payment_mode == "Free":
-            # Make the Sales Invoice from the Sales Order
-            invoice = make_sales_invoice(self.name)
-
-            # Set any additional fields if needed
-            invoice.flags.ignore_permissions = (
-                True  # Optional, if user doesn't have Invoice permission
-            )
-            invoice.set_missing_values()
-            invoice.insert()
-
-            # Submit the Sales Invoice
-            invoice.submit()
-
-            frappe.msgprint(
-                f"Sales Invoice {invoice.name} created and submitted for Free order."
-            )
-    elif self.naming_series in ["SO-A-.FY.-.#.", "SO-AR-.FY.-.#."]:
-        if self.custom_payment_mode == "Free":
-            # Make the Sales Invoice from the Sales Order
-            invoice = make_sales_invoice(self.name)
-
-            # Set any additional fields if needed
-            invoice.flags.ignore_permissions = (
-                True  # Optional, if user doesn't have Invoice permission
-            )
-            invoice.set_missing_values()
-            invoice.insert()
-
-            # Submit the Sales Invoice
-            invoice.submit()
-
-            frappe.msgprint(
-                f"Sales Invoice {invoice.name} created and submitted for Free order."
-            )
+            frappe.db.commit()

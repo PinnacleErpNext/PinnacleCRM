@@ -163,9 +163,9 @@ doc_events = {
         "on_submit": "pinnaclecrm.events.workflow_implementation.update_sales_order_status",
         "before_submit": "pinnaclecrm.events.workflow_implementation.skip_delivery_note",
     },
-    # "Delivery Note": {
-    #     "on_submit": "pinnaclecrm.events.workflow_implementation.mark_sales_order_completed",
-    # },
+    "Delivery Note": {
+        "on_submit": "pinnaclecrm.events.workflow_implementation.mark_so_completed",
+    },
 }
 
 # Scheduled Tasks

@@ -275,3 +275,18 @@ def create_customer(data):
     }
 
 
+# API to get uoms
+@frappe.whitelist(allow_guest=True)
+def get_uom(item_code):
+    query = """
+        SELECT tucd.uom 
+        FROM `tabItem` ti
+        JOIN `tabUOM Conversion Detail` tucd
+        ON ti.item_code = tucd.parent
+        WHERE ti.item_code = %s
+    """
+    data = frappe.db.sql(query, (item_code,), as_dict=True)  # pass parameters as tuple
+
+    uom_list = [uom.uom for uom in data]  # list comprehension, shorter way
+
+    return uom_list

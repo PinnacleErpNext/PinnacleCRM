@@ -89,9 +89,6 @@ window.selectedSeries = "";
 
 frappe.ui.form.on("Sales Order", {
   validate: function (frm) {
-    if (frm.doc.naming_series && frm.doc.naming_series === "SO-G-.FY.-.#.") {
-      frm.set_value("status", "To Bill");
-    }
     if (
       frm.doc.custom_payment_mode == "Kotak" ||
       frm.doc.custom_payment_mode == "ICICI" ||
@@ -128,33 +125,8 @@ frappe.ui.form.on("Sales Order", {
     }
   },
   refresh: function (frm) {
-    if (
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
-      frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
-    ) {
-      frm.set_query("custom_customer_id", () => {
-        return {
-          filters: {
-            customer_type: "UN-Registered",
-            customer_name: frm.doc.custom_unregistered_customer_name,
-          },
-        };
-      });
-    } else {
-      frm.set_query("custom_customer_id", () => {
-        return {
-          filters: {
-            customer_type: "Registered",
-            customer: frm.doc.customer,
-          },
-        };
-      });
-    }
+    // setUomFilter(frm);
+    applyCustomerIdFilter(frm);
     if (frm.is_new()) {
       frm.set_value("naming_series", window.selectedSeries);
       frm.set_value("delivery_date", "2080-01-01");
@@ -291,7 +263,44 @@ frappe.ui.form.on("Sales Order", {
       frm.save("Cancel");
     }
   },
-  on_submit: function (frm) {},
+});
+
+frappe.ui.form.on("Sales Order Item", {
+  item_code: function (frm, cdt, cdn) {
+    // 1) Define `row` before using it
+    const row = locals[cdt][cdn];
+    if (!row.item_code) return;
+
+    frappe.call({
+      method: "pinnaclecrm.api.get_uom",
+      // 2) Now `row` is defined, so this works
+      args: { item_code: row.item_code },
+      callback: function (res) {
+        if (!res.message) return;
+        const allowed_uom = res.message;
+
+        // Override the UOM query for this specific row
+        frm.fields_dict["items"].grid.get_field("uom").get_query = function (
+          doc,
+          cdt2,
+          cdn2
+        ) {
+          if (cdn2 === cdn) {
+            return { filters: { name: ["in", allowed_uom] } };
+          }
+          return {};
+        };
+
+        // Refresh only that UOM cell so the filter is applied
+        frm.fields_dict["items"].grid.grid_rows_by_docname[
+          cdn
+        ].fields_dict.uom.refresh();
+      },
+      error: function (err) {
+        console.error(err);
+      },
+    });
+  },
 });
 
 function fetchGstInDetails(frm) {
@@ -611,4 +620,34 @@ function markLeadConverted(frm) {
       doc: frm.doc,
     },
   });
+}
+
+// function to apply customer id filter
+function applyCustomerIdFilter(frm) {
+  if (
+    frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
+    frm.doc.customer_name ===
+      "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
+    frm.doc.customer_name ===
+      "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
+    frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
+  ) {
+    frm.set_query("custom_customer_id", () => {
+      return {
+        filters: {
+          customer_type: "UN-Registered",
+          customer_name: frm.doc.custom_unregistered_customer_name,
+        },
+      };
+    });
+  } else {
+    frm.set_query("custom_customer_id", () => {
+      return {
+        filters: {
+          customer_type: "Registered",
+          customer: frm.doc.customer,
+        },
+      };
+    });
+  }
 }

@@ -180,6 +180,44 @@ frappe.ui.form.on("Sales Invoice", {
   },
 });
 
+frappe.ui.form.on("Sales Invoice Item", {
+  item_code: function (frm, cdt, cdn) {
+    // 1) Define `row` before using it
+    const row = locals[cdt][cdn];
+    if (!row.item_code) return;
+
+    frappe.call({
+      method: "pinnaclecrm.api.get_uom",
+      // 2) Now `row` is defined, so this works
+      args: { item_code: row.item_code },
+      callback: function (res) {
+        if (!res.message) return;
+        const allowed_uom = res.message;
+
+        // Override the UOM query for this specific row
+        frm.fields_dict["items"].grid.get_field("uom").get_query = function (
+          doc,
+          cdt2,
+          cdn2
+        ) {
+          if (cdn2 === cdn) {
+            return { filters: { name: ["in", allowed_uom] } };
+          }
+          return {};
+        };
+
+        // Refresh only that UOM cell so the filter is applied
+        frm.fields_dict["items"].grid.grid_rows_by_docname[
+          cdn
+        ].fields_dict.uom.refresh();
+      },
+      error: function (err) {
+        console.error(err);
+      },
+    });
+  },
+});
+
 function setCustomerId(frm) {
   if (frm.doc.custom_customer_id) {
     return;

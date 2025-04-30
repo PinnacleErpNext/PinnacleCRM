@@ -237,7 +237,7 @@ function setCustomerId(frm) {
       .get_list("Customer ID", {
         fields: ["customer_id"],
         filters: {
-          customer_type: "UN-Registered",
+          customer_type: "B2C",
           customer_name: frm.doc.custom_unregistered_customer_name || "",
         },
         limit: 1,
@@ -245,7 +245,7 @@ function setCustomerId(frm) {
       .then((cust_id) => {
         if (cust_id.length > 0) {
           frm.set_value("custom_customer_id", cust_id[0].customer_id);
-          console.log(cust_id[0].customer_id);
+          // console.log(cust_id[0].customer_id);
         }
         // else {
         //   frappe.msgprint("No matching Customer ID found.");
@@ -260,7 +260,7 @@ function setCustomerId(frm) {
       .get_list("Customer ID", {
         fields: ["customer_id"],
         filters: {
-          customer_type: "Registered",
+          customer_type: "B2B",
           customer: frm.doc.customer || "",
         },
         limit: 1,
@@ -268,7 +268,7 @@ function setCustomerId(frm) {
       .then((cust_id) => {
         if (cust_id.length > 0) {
           frm.set_value("custom_customer_id", cust_id[0].customer_id);
-          console.log(cust_id[0].customer_id);
+          // console.log(cust_id[0].customer_id);
         }
         // else {
         //   frappe.msgprint("No matching Customer ID found.");

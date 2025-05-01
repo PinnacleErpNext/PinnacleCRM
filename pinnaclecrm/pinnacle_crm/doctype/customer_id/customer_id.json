@@ -47,7 +47,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-22 12:03:41.954796",
+ "modified": "2025-05-01 11:45:23.134598",
  "modified_by": "Administrator",
  "module": "Pinnacle CRM",
  "name": "Customer ID",
@@ -92,7 +92,9 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "customer_name"
 }

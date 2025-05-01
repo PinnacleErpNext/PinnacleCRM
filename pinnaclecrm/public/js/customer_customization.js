@@ -24,7 +24,7 @@ frappe.ui.form.on("Customer", {
       frm.set_query("custom_customer_id", () => {
         return {
           filters: {
-            customer_type: "UN-Registered",
+            customer_type: "B2C",
           },
         };
       });
@@ -32,7 +32,7 @@ frappe.ui.form.on("Customer", {
       frm.set_query("custom_customer_id", () => {
         return {
           filters: {
-            customer_type: "Registered",
+            customer_type: "B2B",
             customer: frm.doc.name,
           },
         };

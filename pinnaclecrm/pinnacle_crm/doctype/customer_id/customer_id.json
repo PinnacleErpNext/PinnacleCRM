@@ -46,6 +46,7 @@
    "mandatory_depends_on": "eval: doc.customer_type === \"B2C\""
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "email_id",
    "fieldtype": "Data",
    "label": "Email ID",

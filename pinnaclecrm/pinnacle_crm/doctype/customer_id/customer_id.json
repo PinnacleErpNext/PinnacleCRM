@@ -9,7 +9,8 @@
   "customer_type",
   "customer",
   "customer_id",
-  "customer_name"
+  "customer_name",
+  "email_id"
  ],
  "fields": [
   {
@@ -43,11 +44,17 @@
    "fieldtype": "Data",
    "label": "Customer Name",
    "mandatory_depends_on": "eval: doc.customer_type === \"B2C\""
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email ID",
+   "mandatory_depends_on": "eval: doc.customer_type === \"B2C\""
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-01 11:45:23.134598",
+ "modified": "2025-05-03 17:34:27.432097",
  "modified_by": "Administrator",
  "module": "Pinnacle CRM",
  "name": "Customer ID",

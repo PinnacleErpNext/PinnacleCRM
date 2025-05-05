@@ -162,20 +162,6 @@ frappe.ui.form.on("Sales Invoice", {
     }
   },
   customer: function (frm) {
-    if (
-      frm.doc.customer !== "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" &&
-      frm.doc.customer !== "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" &&
-      frm.doc.customer_name !==
-        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" &&
-      frm.doc.customer_name !== "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
-    ) {
-      setCustomerId(frm);
-    }
-  },
-  custom_unregistered_customer_name: function (frm) {
-    setCustomerId(frm);
-  },
-  onload: function (frm) {
     setCustomerId(frm);
   },
 });

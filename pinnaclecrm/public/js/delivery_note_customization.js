@@ -122,9 +122,6 @@ frappe.ui.form.on("Delivery Note", {
   customer: function (frm) {
     setCustomerId(frm);
   },
-  onload: function (frm) {
-    setCustomerId(frm);
-  },
 });
 
 function setCustomerId(frm) {

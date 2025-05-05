@@ -260,9 +260,6 @@ frappe.ui.form.on("Sales Order", {
       frm.doc.custom_customer_id.toUpperCase()
     );
   },
-  onload: function (frm) {
-    setCustomerId(frm);
-  },
 });
 
 frappe.ui.form.on("Sales Order Item", {

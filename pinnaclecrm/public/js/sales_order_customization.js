@@ -111,22 +111,22 @@ frappe.ui.form.on("Sales Order", {
         frm.doc.naming_series.includes("-G-")
       ) {
         frm.set_value("custom_sales_type", "Fresh");
-        frm.set_df_property("custom_sales_type", "read_only", 1);
+        // frm.set_df_property("custom_sales_type", "read_only", 1);
       } else if (
         frm.doc.naming_series.includes("-AR-") ||
         frm.doc.naming_series.includes("-GR-")
       ) {
         frm.set_value("custom_sales_type", "Renewal");
-        frm.set_df_property("custom_sales_type", "read_only", 1);
-      } else {
-        frm.set_value("custom_sales_type", "");
-        frm.set_df_property("custom_sales_type", "read_only", 0);
+        // frm.set_df_property("custom_sales_type", "read_only", 1);
       }
+      // else {
+      //   frm.set_value("custom_sales_type", "");
+      //   frm.set_df_property("custom_sales_type", "read_only", 0);
+      // }
     }
   },
   refresh: function (frm) {
     // setUomFilter(frm);
-    applyCustomerIdFilter(frm);
     if (frm.is_new()) {
       frm.set_value("naming_series", window.selectedSeries);
       frm.set_value("delivery_date", "2080-01-01");
@@ -255,13 +255,13 @@ frappe.ui.form.on("Sales Order", {
     setCustomerId(frm);
   },
   custom_unregistered_customer_name: function (frm) {
-    setCustomerId(frm);
+    frm.set_value(
+      "custom_customer_id",
+      frm.doc.custom_customer_id.toUpperCase()
+    );
   },
   onload: function (frm) {
     setCustomerId(frm);
-    if (frm.doc.workflow_state === "Cancelled" && frm.doc.docstatus == 1) {
-      frm.save("Cancel");
-    }
   },
 });
 
@@ -555,61 +555,11 @@ function setCustomerId(frm) {
   if (frm.doc.custom_customer_name) {
     return;
   }
-  if (
-    (frm.doc.customer_name ===
-      "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
-      frm.doc.customer_name ===
-        "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]") &&
-    frm.doc.custom_unregistered_customer_name
-  ) {
+  if (frm.doc.customer) {
     frappe.db
-      .get_list("Customer ID", {
-        fields: ["customer_id"],
-        filters: {
-          customer_type: "B2C",
-          customer_name: frm.doc.custom_unregistered_customer_name || "",
-        },
-        limit: 1,
-      })
-      .then((cust_id) => {
-        if (cust_id.length > 0) {
-          frm.set_value("custom_customer_id", cust_id[0].customer_id);
-          // console.log(cust_id[0].customer_id);
-        } 
-        // else {
-        //   frappe.msgprint("No matching Customer ID found.");
-        // }
-      })
-      .catch((err) => {
-        console.error(err);
-        frappe.msgprint("Error while fetching Customer ID.");
-      });
-  } else {
-    frappe.db
-      .get_list("Customer ID", {
-        fields: ["customer_id"],
-        filters: {
-          customer_type: "B2B",
-          customer: frm.doc.customer || "",
-        },
-        limit: 1,
-      })
-      .then((cust_id) => {
-        if (cust_id.length > 0) {
-          frm.set_value("custom_customer_id", cust_id[0].customer_id);
-          // console.log(cust_id[0].customer_id);
-        }
-        // else {
-        //   frappe.msgprint("No matching Customer ID found.");
-        // }
-      })
-      .catch((err) => {
-        console.error(err);
-        frappe.msgprint("Error while fetching Customer ID.");
+      .get_value("Customer", frm.doc.customer, "custom_customer_id")
+      .then((res) => {
+        frm.doc.custom_customer_id = res.message.custom_customer_id;
       });
   }
 }
@@ -621,34 +571,4 @@ function markLeadConverted(frm) {
       doc: frm.doc,
     },
   });
-}
-
-// function to apply customer id filter
-function applyCustomerIdFilter(frm) {
-  if (
-    frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [API CUST]" ||
-    frm.doc.customer_name ===
-      "UNREGISTERED CUSTOMER [OUTSIDE UP ] [API CUST]" ||
-    frm.doc.customer_name ===
-      "UNREGISTERED CUSTOMER [OUTSIDE UP ] [GST CUST]" ||
-    frm.doc.customer_name === "UNREGISTERED CUSTOMER [WITHIN UP ] [GST CUST]"
-  ) {
-    frm.set_query("custom_customer_id", () => {
-      return {
-        filters: {
-          customer_type: "UN-Registered",
-          customer_name: frm.doc.custom_unregistered_customer_name,
-        },
-      };
-    });
-  } else {
-    frm.set_query("custom_customer_id", () => {
-      return {
-        filters: {
-          customer_type: "Registered",
-          customer: frm.doc.customer,
-        },
-      };
-    });
-  }
 }

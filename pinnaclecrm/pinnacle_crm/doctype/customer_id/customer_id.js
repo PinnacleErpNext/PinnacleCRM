@@ -5,7 +5,10 @@ frappe.ui.form.on("Customer ID", {
   refresh(frm) {},
   customer: function (frm) {
     frappe.db.get_doc("Customer", frm.doc.customer).then((doc) => {
-      frm.set_value("customer_name", doc.customer_name);
+      frm.set_value("customer_name", doc.customer_name.toUpperCase());
     });
+  },
+  customer_name: function (frm) {
+    frm.set_value("customer_name", frm.doc.customer_name.toUpperCase())
   },
 });

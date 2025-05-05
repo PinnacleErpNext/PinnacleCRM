@@ -2,6 +2,7 @@ window.gstData = {};
 
 frappe.ui.form.on("Customer", {
   refresh: function (frm) {
+    disableCustomerForm(frm);
     if (frm.doc.customer_primary_address) {
       frm.refresh_field("customer_primary_address");
     }
@@ -66,6 +67,9 @@ frappe.ui.form.on("Customer", {
         },
       });
     }
+  },
+  onload: function (frm) {
+    disableCustomerForm(frm);
   },
 });
 
@@ -318,5 +322,14 @@ function setCustomerName(gstDialog, frm) {
     gstDialog.hide();
   } else {
     frappe.msgprint("Please select a valid name option.");
+  }
+}
+
+function disableCustomerForm(frm) {
+  if (
+    !frappe.user.has_role("System Manager") &&
+    frm.doc.name.includes("UNREGISTERED CUSTOMER")
+  ) {
+    frm.set_read_only();
   }
 }

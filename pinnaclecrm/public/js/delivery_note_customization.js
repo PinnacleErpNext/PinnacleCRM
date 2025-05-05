@@ -1,10 +1,13 @@
+window.selectedSeries = "";
+
 frappe.ui.form.on("Delivery Note", {
   naming_series: function (frm) {
     pinnaclecrm.utils.applyItemGroupFilter(frm);
+    window.selectedSeries = frm.doc.naming_series;
   },
   refresh: function (frm) {
     if (frm.is_new()) {
-      frm.set_value("naming_series", "");
+      frm.set_value("naming_series", window.selectedSeries);
     }
     let observer = new MutationObserver((mutations, observer) => {
       let removed = false;
@@ -116,4 +119,23 @@ frappe.ui.form.on("Delivery Note", {
       console.log("Party name not available or naming series already set");
     }
   },
+  customer: function (frm) {
+    setCustomerId(frm);
+  },
+  onload: function (frm) {
+    setCustomerId(frm);
+  },
 });
+
+function setCustomerId(frm) {
+  if (frm.doc.custom_customer_name) {
+    return;
+  }
+  if (frm.doc.customer) {
+    frappe.db
+      .get_value("Customer", frm.doc.customer, "custom_customer_id")
+      .then((res) => {
+        frm.doc.custom_customer_id = res.message.custom_customer_id;
+      });
+  }
+}

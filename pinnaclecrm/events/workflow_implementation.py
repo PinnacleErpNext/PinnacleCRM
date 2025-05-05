@@ -7,10 +7,12 @@ def skip_delivery_note(self, method):
     skip_dn = ("SO-G-.FY.-.#.", "SO-GR-.FY.-.#.", "SO-D-.FY.-.#.")
     if self.naming_series in skip_dn:
         self.skip_delivery_note = 1
+        self.per_delivered = 100
 
 
 # Mark sales order completed after submit.
 def update_sales_order_status(self, method):
+    cancel_sales_order(self, method)
     if (
         self.naming_series in ["SO-G-.FY.-.#.", "SO-GR-.FY.-.#.", "SO-D-.FY.-.#."]
         and self.custom_payment_mode == "Free"
@@ -40,3 +42,9 @@ def mark_so_completed(self, method):
                 {"per_billed": 100, "status": "Completed"},
             )
             frappe.db.commit()
+
+# Cancel sales order
+def cancel_sales_order(self, method):
+    if self.workflow_state == "Cancelled":
+        doc = frappe.get_doc("Sales Order", self.name)
+        doc.cancel()

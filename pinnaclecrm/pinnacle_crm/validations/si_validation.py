@@ -13,6 +13,5 @@ def validation(self, method):
         "taxes",
         "customer_address",
         "contact_person",
-        "shipping_address_name",
     )
     validate_document(self, method, field_list)

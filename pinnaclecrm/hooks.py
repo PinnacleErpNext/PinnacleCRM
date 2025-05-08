@@ -162,9 +162,14 @@ doc_events = {
     "Sales Order": {
         "on_submit": "pinnaclecrm.events.workflow_implementation.update_sales_order_status",
         "before_submit": "pinnaclecrm.events.workflow_implementation.skip_delivery_note",
+        "validate": "pinnaclecrm.pinnacle_crm.validations.so_validation.validation",
     },
     "Delivery Note": {
         "on_submit": "pinnaclecrm.events.workflow_implementation.mark_so_completed",
+        "validate": "pinnaclecrm.pinnacle_crm.validations.dn_validation.validation",
+    },
+    "Sales Invoice": {
+        "validate": "pinnaclecrm.pinnacle_crm.validations.si_validation.validation",
     },
 }
 

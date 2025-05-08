@@ -358,7 +358,7 @@
    "label": "Customer ID",
    "length": 0,
    "link_filters": null,
-   "mandatory_depends_on": null,
+   "mandatory_depends_on": "eval:(doc.naming_series ===\"DL-GR-.FY.-.#.\" || doc.naming_series === \"DL-AR-.FY.-.#.\" )",
    "modified": "2025-05-03 13:10:50.020366",
    "modified_by": "Administrator",
    "module": null,
